@@ -127,6 +127,9 @@ function init() {
   marker.rotation.x = -Math.PI / 2; marker.visible = false; marker.renderOrder = 5; scene.add(marker);
   bindInput();
   addEventListener('resize', resize);
+  if (window.visualViewport) visualViewport.addEventListener('resize', resize);
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); }, false);
+  canvas.addEventListener('webglcontextrestored', () => { renderer.state.reset && renderer.state.reset(); resize(); }, false);
 }
 
 /* ---- procedural textures (no downloads) ---- */
@@ -713,11 +716,25 @@ let helpT = null;
 function hideHelp() { ui.wHelp.classList.add('off'); }
 
 /* ---------------- frame loop ---------------- */
-function resize() { if (!renderer) return; const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; P.tfov = P.fov = w < h ? 78 : 72; camera.updateProjectionMatrix(); }
+const wantPR = () => Math.min(devicePixelRatio || 1, touch ? 1.6 : 2);
+function resize() {
+  if (!renderer) return;
+  const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
+  if (renderer.getPixelRatio() !== wantPR()) renderer.setPixelRatio(wantPR());
+  renderer.setSize(w, h, false); renderer.setViewport(0, 0, w, h); camera.aspect = w / h;
+  const f = w < h ? 78 : 72; if (Math.abs(P.tfov - f) > 12 || !sized) P.tfov = P.fov = f; sized = true; camera.updateProjectionMatrix();
+}
+let sized = false, sz = null;
+function checkSize() {      // the drawing area must always match the canvas on screen; fix it the moment it drifts
+  const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+  if (!sz) sz = new THREE.Vector2(); renderer.getSize(sz);
+  if (sz.x !== w || sz.y !== h || renderer.getPixelRatio() !== wantPR() || canvas.width !== Math.floor(w * renderer.getPixelRatio())) resize();
+}
 function step(now) {
   if (!running) return;
   requestAnimationFrame(step);
   const dt = Math.min(.05, (now - last) / 1000 || .016); last = now;
+  checkSize();
   // turn with arrows / Q E
   const turn = (keys.has('arrowleft') || keys.has('q') ? 1 : 0) - (keys.has('arrowright') || keys.has('e') ? 1 : 0);
   if (turn) P.ty += turn * dt * 1.7;
@@ -831,7 +848,9 @@ window.RHWalk = { preload: () => Promise.all([load(), loadData()]), open, close,
     renderer.setSize(o.w, o.h, false); camera.aspect = o.w / o.h; camera.fov = o.fov || 53; camera.updateProjectionMatrix();
     camera.position.set(x, o.y || 1.45, z); camera.rotation.set(o.pitch || 0, -(o.yaw || 0) * Math.PI / 180, 0, 'YXZ');
     renderer.render(scene, camera);
-    return canvas.toDataURL(o.fmt === 'jpg' ? 'image/jpeg' : 'image/png', .93);
+    const url = canvas.toDataURL(o.fmt === 'jpg' ? 'image/jpeg' : 'image/png', .93);
+    if (o.restore) { resize(); running = true; requestAnimationFrame(step); }
+    return url;
   },
   _free: (px, py) => { const [x, z] = cur.map.toW(px, py); return !blocked(x, z); } };
 })();
