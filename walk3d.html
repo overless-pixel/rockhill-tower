@@ -266,7 +266,7 @@ footer{padding:28px max(5vw,16px);border-top:1px solid var(--line);color:#8f8c84
   <div class="wrap">
     <div data-reveal><p class="k">Residences</p>
     <h2>Studios to three bedrooms</h2>
-    <p class="lede" style="margin-top:16px">Four home types across 20 residential floors, with wood floors throughout.</p></div>
+    <p class="lede" style="margin-top:16px">Four home types across 27 residential floors, with parking underground, with wood floors throughout.</p></div>
     <div class="grid4" id="cards"></div>
   </div>
 </section>
@@ -356,7 +356,7 @@ const AMEN=['Rooftop pool','Padel court','Jogging track','Gym','Sauna & steam','
 const IW=3840, IH=2640;
 const G={H:2429,VL:-55,VW:-13480,VF:10100,XL:1470,X1:1700,X2:1815,XR:2278,XM:1750,A:66.44,B0:358.12};
 const slp=(y,v,x)=>(G.H-y)/(v-x);
-const FIRST=7, TOP=26, LOWEST=0;
+const FIRST=0, TOP=26, LOWEST=0;      // parking is underground: every level above the lobby is homes
 /* three faces per floor: left side, the small-window column, the balcony front */
 function edge(k){const ym=G.B0+G.A*k,y1=ym-slp(ym,G.VW,1757)*(G.XM-G.X1),y2=y1+slp(y1,G.VW,1757)*(G.X2-G.X1),
   yr=y2+slp(y2,G.VF,2050)*(G.XR-G.X2),yl=y1+slp(y1,G.VL,1585)*(G.XL-G.X1);
@@ -365,7 +365,7 @@ const polyAt=k=>{const a=edge(k+.04),b=edge(k+.96);return a.concat(b.reverse()).
 const kOf=l=>TOP-l;
 const BAR={x0:2350,x1:3790,y0:1080};   // floor bar sits in the sky to the right of the tower
 const CROP=[1360,40,1000,2600];        // tower close-up for picking on phones and tablets
-const MIX='8643,8643,8643,8643,8643,8643,7743,8742,8643,7743,8742,8643,7743,8742,8643,7743,8732,7643,8732,7643'.split(',');
+const MIX='8643,8742,8643,7743,8643,8742,8643,8643,8643,8643,8643,8643,8643,7743,8742,8643,7743,8742,8643,7743,8742,8643,7743,8732,7643,8732,7643'.split(',');
 function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 const KEYS=['S','1','2','3'];
 const UNITS={};
@@ -374,7 +374,7 @@ for(let l=FIRST;l<=TOP;l++){
   KEYS.forEach((t,j)=>{const n=+m[j];for(let i=0;i<n;i++)pos.push({t,p:(i+.5)/n+j*.001})});
   pos.sort((a,b)=>a.p-b.p);
   const r=rnd(l*7919),sold=.3+(l-FIRST)/(TOP-FIRST)*.25;
-  UNITS[l]=pos.map((x,i)=>({no:String(l*100+i+1),t:x.t,free:r()>sold}));
+  UNITS[l]=pos.map((x,i)=>({no:l?String(l*100+i+1):'G'+String(i+1).padStart(2,'0'),t:x.t,free:r()>sold}));
 }
 const $=id=>document.getElementById(id);
 const sysReduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
