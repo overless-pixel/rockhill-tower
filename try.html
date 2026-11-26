@@ -394,6 +394,7 @@ footer{padding:28px max(5vw,16px);border-top:1px solid var(--line);color:#8f8c84
 <div class="tip" id="tip"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/motion@11.11.17/dist/motion.js"></script>
+<script src="walk.js"></script>
 <script>
 {
 const THREE_URL='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -881,13 +882,24 @@ function openPhoto(type,fromFlight){
   $('pWa').href=wa(unit?`Hello, I am interested in unit ${unit.no} (${T.n}, level ${sel}) at Rockhill Tower.`:`Hello, I would like to know more about the ${T.n} homes at Rockhill Tower.`);
   proomsEl.innerHTML=TOUR[type].map((r,i)=>`<button data-r="${i}" aria-pressed="false">${r.n}</button>`).join('')
     +'<button class="ptbtn" id="pPlay" aria-pressed="false">Play tour</button>'
-    +(fromFlight?'<button class="ptbtn" id="p3d">3D plan</button>':'')
+    +(WALKS[type]?'<button class="ptbtn" id="p3d">Walk in 3D</button>':'')
     +`<button class="gbtn" id="pBack">${fromFlight?'Back to the tower':'Close'}</button>`;
   const el=$('ptour');el.classList.remove('ready');el.classList.add('open');document.body.style.overflow='hidden';
   if(MO&&!fromFlight)MO.animate(el,{opacity:[0,1]},{duration:.5});
   pGo(0,1).then(()=>{el.classList.add('ready');movePill(proomsEl,proomsEl.querySelector('[data-r="0"]'),'rpill',false);
     if(MO)MO.animate(proomsEl.querySelectorAll('button'),{opacity:[0,1],transform:['translateY(10px)','translateY(0px)']},{duration:.45,ease:EZ,delay:MO.stagger(.05)});
     $('pBack').focus({preventScroll:true})});
+}
+/* the walkable 3D home opens over the pictures; closing it brings you back to them */
+const WALKS={S:1,1:1,2:1};
+function openWalk(type,fromFlight){
+  const T=TYPES[type];let l=fromFlight?sel:null;
+  if(!l){for(l=TOP;l>=FIRST&&!UNITS[l].some(u=>u.t===type);l--);}
+  const unit=free(l).find(u=>u.t===type)||UNITS[l].find(u=>u.t===type)||{no:''};
+  RHWalk.open({type,kicker:`Level ${l}${unit.no?' · Unit '+unit.no:''}`,title:T.n,sub:`${T.area.toLocaleString('en')} sq ft · ${T.line}`,
+    wa:wa(`Hello, I am interested in ${unit.no?'unit '+unit.no+' ':''}(${T.n}, level ${l}) at Rockhill Tower.`),
+    backLabel:'Back to the photos',
+    onBack:()=>{RHWalk.close();document.body.style.overflow='hidden';const b=$('p3d');b&&b.focus({preventScroll:true})}});
 }
 async function closePhoto(toTower){
   pAuto(false);if(P.kb)P.kb.stop();const el=$('ptour');el.classList.remove('ready');
@@ -901,13 +913,12 @@ proomsEl.addEventListener('click',async e=>{
   if(b.dataset.r!==undefined){pAuto(false);pGo(+b.dataset.r)}
   else if(b.id==='pPlay')pAuto(!P.auto);
   else if(b.id==='pBack'){P.fromFlight?flyOut():closePhoto(false)}
-  else if(b.id==='p3d'){pAuto(false);try{await ensure3D()}catch(err){return}
-    await closePhoto(true);openTour();flash.style.opacity=0}
+  else if(b.id==='p3d'){pAuto(false);openWalk(P.type,P.fromFlight)}
 });
 $('pPrev').addEventListener('click',()=>{pAuto(false);pGo(P.i-1,-1)});
 $('pNext').addEventListener('click',()=>{pAuto(false);pGo(P.i+1,1)});
 addEventListener('keydown',e=>{
-  if(!P.open||lbOpen())return;
+  if(!P.open||lbOpen()||RHWalk.isOpen())return;
   if(e.key==='ArrowRight'){pAuto(false);pGo(P.i+1,1)}else if(e.key==='ArrowLeft'){pAuto(false);pGo(P.i-1,-1)}
   else if(e.key==='Escape'){P.fromFlight?flyOut():closePhoto(false)}
 });
@@ -978,7 +989,7 @@ panelIntro();
     addEventListener('wheel',e=>{
       if(e.ctrlKey||e.defaultPrevented)return;
       if(document.body.style.overflow==='hidden')return;            // the 3D tour is open
-      if(e.target.closest&&e.target.closest('.ddscroll,#tour,.rooms'))return;
+      if(e.target.closest&&e.target.closest('.ddscroll,#tour,#walk,.rooms'))return;
       const now=performance.now(), dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*innerHeight:e.deltaY;
       // trackpads send many small, fractional deltas with momentum: leave those native
       if(Math.abs(dy)<40&&!Number.isInteger(e.deltaY)&&now-lastWheel<50){lastWheel=now;return}

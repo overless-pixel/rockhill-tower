@@ -802,7 +802,7 @@ async function open(o) {
       ui.wNote.textContent = 'Built to scale from Rockhill’s floor plan. Finishes and furniture are indicative.'; }
     home = cur.group; scene.add(home);
     captureEnv();
-    ui.wRooms.innerHTML = cur.rooms.map((r, i) => `<button data-r="${i}" aria-pressed="false">${r.n}</button>`).join('') + '<button class="back">Back to the tower</button>';
+    ui.wRooms.innerHTML = cur.rooms.map((r, i) => `<button data-r="${i}" aria-pressed="false">${r.n}</button>`).join('') + `<button class="back">${o.backLabel || 'Back to the tower'}</button>`;
     roomI = -1;
     if (cur.map) { ui.wMap.style.display = ''; ui.wMapImg.src = cur.map.img; ui.wMap.style.aspectRatio = cur.map.w + '/' + cur.map.h; } else ui.wMap.style.display = 'none';
     P.x = cur.spawn.x; P.z = cur.spawn.z; P.yaw = P.ty = cur.spawn.yaw; P.pitch = P.tp = -.06; P.vx = P.vz = 0; auto = null; keys.clear();
