@@ -7,7 +7,7 @@
 (function () {
 'use strict';
 const LIB = 'lib/';
-const CH = 2.8, EYE = 1.6, RAD = .23, CELL = .05;
+const CH = 2.8, EYE = 1.6, RAD = .19, CELL = .05, SOF = 2.52;
 const MODELS = window.RH_MODELS || {};          // e.g. {S:{url:'models/studio.glb', spawn:[x,z,yawDeg], rooms:[[name,x,z,yawDeg]]}}
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const touch = matchMedia('(pointer: coarse)').matches;
@@ -109,7 +109,7 @@ function init() {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, touch ? 1.6 : 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .8;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .68;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   maxAniso = renderer.capabilities.getMaxAnisotropy();
   scene = new THREE.Scene();
@@ -117,7 +117,7 @@ function init() {
   const pm = new THREE.PMREMGenerator(renderer);
   envTex = pm.fromScene(new THREE.RoomEnvironment(), .04).texture;
   scene.environment = envTex;
-  scene.add(new THREE.HemisphereLight(0xffeedb, 0x4f4031, .3));
+  scene.add(new THREE.HemisphereLight(0xffeedb, 0x4f4031, .22));
   sun = new THREE.DirectionalLight(0xffd4a0, 1.45);
   sun.castShadow = true; sun.shadow.mapSize.set(touch ? 1024 : 2048, touch ? 1024 : 2048);
   sun.shadow.bias = -.0004; sun.shadow.normalBias = .03; sun.shadow.radius = 3;
@@ -218,40 +218,68 @@ function skyDome() {
   m.userData.sky = true; return m;
 }
 
+/* ---- materials cut from Rockhill's renders (tex/*.jpg), with relief maps ---- */
+const RTEX = ['marble', 'marble_floor', 'walnut', 'oak', 'stone', 'splash', 'balcony'];
+let rtexP = null; const RT = {};
+function loadRenderTextures() {
+  if (!rtexP) {
+    const L = new THREE.TextureLoader();
+    const one = (n, srgb) => L.loadAsync('tex/' + n + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = maxAniso; if (srgb) t.encoding = THREE.sRGBEncoding; RT[n] = t; });
+    rtexP = Promise.all(RTEX.flatMap(n => [one(n, true), one(n + '_n', false)])).catch(e => { rtexP = null; throw e; });
+  }
+  return rtexP;
+}
+function glowTex() {                       // soft warm wash for the LED coves
+  return canvasTex('glow', 256, (g, S) => { const gr = g.createLinearGradient(0, 0, 0, S); gr.addColorStop(0, 'rgba(255,214,160,1)'); gr.addColorStop(.35, 'rgba(255,205,150,.45)'); gr.addColorStop(1, 'rgba(255,200,140,0)'); g.fillStyle = gr; g.fillRect(0, 0, S, S); });
+}
 /* ---- materials ---- */
 let M = null;
 function mats() {
   if (M) return M;
-  const std = (o) => new THREE.MeshStandardMaterial(Object.assign({ envMapIntensity: .32 }, o));
+  const std = (o) => new THREE.MeshStandardMaterial(Object.assign({ envMapIntensity: .5 }, o));
+  const phys = (o) => new THREE.MeshPhysicalMaterial(Object.assign({ envMapIntensity: .8 }, o));
+  const tm = (m, metres) => { m.userData.tm = metres; return m; };
+  const nrm = (n, sc) => ({ normalMap: RT[n + '_n'], normalScale: new THREE.Vector2(sc, sc) });
+  const sheen = (m, c) => { if ('sheen' in m) m.sheen = new THREE.Color(c); return m; };
   M = {
-    wall: std({ color: 0xebe4da, roughness: .93, vertexColors: true }), ceil: std({ color: 0xf6f4f0, roughness: .96 }), skirt: std({ color: 0xdcd5cb, roughness: .7 }),
-    wood: std({ map: woodTex(), roughness: .52 }),
-    tile: std({ map: tileTex('tile', [201, 198, 193], '160,156,150', 2), roughness: .35 }),
-    stone: std({ map: tileTex('stone', [214, 205, 190], '178,170,158', 2), roughness: .8 }),
-    marble: std({ map: marbleTex(), roughness: .18 }),
-    walnut: std({ map: grainTex('walnut', '#4d3424', 'rgba(25,14,8,', 'rgba(150,110,80,'), roughness: .5 }),
-    oak: std({ map: grainTex('oak', '#a98260', 'rgba(70,44,24,', 'rgba(230,200,160,'), roughness: .55 }),
-    fabric: std({ map: noiseTex('fab', '#c4bcae', .07), roughness: .97 }),
-    fabric2: std({ map: noiseTex('fab2', '#77716a', .08), roughness: .97 }),
-    sheer: std({ color: 0xf3eee6, roughness: .95, transparent: true, opacity: .78, side: THREE.DoubleSide }),
-    linen: std({ map: noiseTex('lin', '#e9e4dc', .05), roughness: .95 }),
-    rug: std({ map: noiseTex('rug', '#cbc1b0', .1), roughness: 1 }),
-    glass: std({ color: 0xd8e8f0, roughness: .03, metalness: .1, transparent: true, opacity: .16, depthWrite: false, envMapIntensity: 1.2 }),
+    wall: std({ color: 0xe4ddd2, roughness: .9, vertexColors: true, envMapIntensity: .25 }), ceil: std({ color: 0xf6f3ee, roughness: .95, envMapIntensity: .2 }),
+    skirt: std({ color: 0xd8d1c6, roughness: .5 }),
+    mfloor: tm(phys(Object.assign({ map: RT.marble_floor, color: 0xe2ded8, roughness: .14, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1 }, nrm('marble_floor', .25))), 1.2),
+    marble: tm(phys(Object.assign({ map: RT.marble, color: 0xf0ede8, roughness: .2, clearcoat: .7, clearcoatRoughness: .08 }, nrm('marble', .2))), 1.0),
+    splash: tm(phys(Object.assign({ map: RT.splash, roughness: .2, clearcoat: .6, clearcoatRoughness: .1 }, nrm('splash', .2))), .9),
+    stone: tm(std(Object.assign({ map: RT.stone, roughness: .55 }, nrm('stone', .7))), 1.0),
+    walnut: tm(phys(Object.assign({ map: RT.walnut, roughness: .42, clearcoat: .35, clearcoatRoughness: .25, envMapIntensity: .6 }, nrm('walnut', .5))), 1.0),
+    oak: tm(std(Object.assign({ map: RT.oak, roughness: .48, envMapIntensity: .55 }, nrm('oak', .55))), 1.6),
+    balc: tm(std(Object.assign({ map: RT.balcony, roughness: .7 }, nrm('balcony', .5))), 1.2),
+    lacquer: phys({ color: 0x6f675f, roughness: .45, clearcoat: .4, clearcoatRoughness: .3 }),
+    gloss: phys({ color: 0xe9e6e1, roughness: .3, clearcoat: .8, clearcoatRoughness: .08, envMapIntensity: .5 }),
+    fabric: sheen(phys({ map: noiseTex('fab', '#cdc5b8', .06), roughness: .95, envMapIntensity: .3 }), 0x8a8378),
+    fabric2: sheen(phys({ map: noiseTex('fab2', '#56555a', .07), roughness: .9, envMapIntensity: .3 }), 0x9a9aa4),
+    linen: std({ map: noiseTex('lin', '#efece7', .04), roughness: .93, envMapIntensity: .3 }),
+    head: sheen(phys({ map: noiseTex('head', '#d3cec7', .06), roughness: .93, envMapIntensity: .3 }), 0xbbb4aa),
+    throw: std({ map: noiseTex('thr', '#8e8a85', .08), roughness: .97 }),
+    rug: std({ map: noiseTex('rug', '#a9a49d', .14), roughness: 1, envMapIntensity: .2 }),
+    glass: std({ color: 0xd8e8f0, roughness: .03, metalness: .1, transparent: true, opacity: .14, depthWrite: false, envMapIntensity: 1.2 }),
     frame: std({ color: 0x2a2623, roughness: .38, metalness: .7 }),
-    gold: std({ color: 0xc9a25a, roughness: .28, metalness: 1, envMapIntensity: 1 }),
-    steel: std({ color: 0xc8ccd0, roughness: .25, metalness: 1, envMapIntensity: 1 }),
+    gold: std({ color: 0xd1a95e, roughness: .22, metalness: 1, envMapIntensity: 1.1 }),
+    steel: std({ color: 0xb9b2aa, roughness: .3, metalness: 1, envMapIntensity: .9 }),
     black: std({ color: 0x0e0e10, roughness: .08, metalness: .2, envMapIntensity: 1 }),
-    ceramic: std({ color: 0xf5f5f3, roughness: .12, envMapIntensity: .9 }),
-    mirror: std({ color: 0xb9c2c8, roughness: .22, metalness: .9, envMapIntensity: .3 }),
-    leaf: std({ color: 0x46663a, roughness: .75 }), leaf2: std({ color: 0x5b7c46, roughness: .75 }), pot: std({ color: 0xd8d1c6, roughness: .9 }),
-    lampOn: new THREE.MeshStandardMaterial({ color: 0xfff1d6, emissive: 0xffd9a0, emissiveIntensity: 1.2, roughness: .6 }),
+    ceramic: phys({ color: 0xf5f5f3, roughness: .1, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: .9 }),
+    mirror: std({ color: 0xc9d0d4, roughness: .05, metalness: 1, envMapIntensity: 1 }),
+    leaf: std({ color: 0x3f5f36, roughness: .75 }), leaf2: std({ color: 0x55773f, roughness: .75 }), pot: std({ color: 0x2b2a2c, roughness: .5, metalness: .2 }),
+    lampOn: new THREE.MeshStandardMaterial({ color: 0xfff1d6, emissive: 0xffd9a0, emissiveIntensity: 1.1, roughness: .6 }),
     down: new THREE.MeshBasicMaterial({ color: 0xfff3dc }),
-    led: new THREE.MeshBasicMaterial({ color: 0xffdca0 }),
+    led: new THREE.MeshBasicMaterial({ color: 0xffe0aa }),
+    cove: new THREE.MeshBasicMaterial({ map: glowTex(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .55, toneMapped: false }),
     tv: std({ color: 0x050506, roughness: .05, metalness: .3, envMapIntensity: 1.1 }),
-    door: std({ map: grainTex('door', '#3e2a1e', 'rgba(20,10,5,', 'rgba(140,100,70,'), roughness: .45 }),
+    door: tm(phys(Object.assign({ map: RT.walnut, roughness: .4, clearcoat: .4, clearcoatRoughness: .2 }, nrm('walnut', .5))), 1.0),
+    sheer: std({ color: 0xf3eee6, roughness: .95, transparent: true, opacity: .74, side: THREE.DoubleSide, envMapIntensity: .2 }),
+    drape: sheen(phys({ map: noiseTex('drp', '#6e665e', .06), roughness: .95, side: THREE.DoubleSide, envMapIntensity: .2 }), 0x9b9186),
   };
   return M;
 }
+let STY = {};                                   // per-home finishes, as in that home's renders
+const STYLES = { S: { kLow: 'walnut', kUp: 'walnut' }, 1: { kLow: 'lacquer', kUp: 'gloss' }, 2: { kLow: 'walnut', kUp: 'walnut' } };
 
 /* ---- geometry helpers ---- */
 function uvWorld(geo, sx, sz) {           // planar UVs in metres for floor/ceiling pieces
@@ -262,7 +290,7 @@ function uvWorld(geo, sx, sz) {           // planar UVs in metres for floor/ceil
 function box(w, h, d, mat, x, y, z, round) {
   const g = round && THREE.RoundedBoxGeometry ? new THREE.RoundedBoxGeometry(w, h, d, 3, Math.min(round, w / 2, h / 2, d / 2)) : new THREE.BoxGeometry(w, h, d);
   if (mat.map) {                         // keep texture scale in metres
-    const s = TEXM[mat.map === M.wood.map ? 'wood' : 'oak'] || 1, uv = g.attributes.uv, n = g.attributes.normal;
+    const s = mat.userData.tm || 1, uv = g.attributes.uv, n = g.attributes.normal;
     for (let i = 0; i < uv.count; i++) {
       const ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i));
       const sw = ax > .5 ? d : w, sh = ay > .5 ? d : h;
@@ -286,6 +314,13 @@ function gridRect(x0, z0, x1, z1, v) {
   const j0 = Math.max(0, Math.floor((z0 - grid.z0) / CELL)), j1 = Math.min(grid.h - 1, Math.floor((z1 - grid.z0) / CELL));
   for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) grid.a[j * grid.w + i] = v;
 }
+let wallA = null;
+function markWall(x0, z0, x1, z1) {
+  const i0 = Math.max(0, Math.floor((x0 - grid.x0) / CELL)), i1 = Math.min(grid.w - 1, Math.floor((x1 - grid.x0) / CELL));
+  const j0 = Math.max(0, Math.floor((z0 - grid.z0) / CELL)), j1 = Math.min(grid.h - 1, Math.floor((z1 - grid.z0) / CELL));
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) wallA[j * grid.w + i] = 1;
+}
+function isWall(x, z) { const i = Math.floor((x - grid.x0) / CELL), j = Math.floor((z - grid.z0) / CELL); return i >= 0 && j >= 0 && i < grid.w && j < grid.h && wallA[j * grid.w + i] === 1; }
 function cellAt(x, z) { const i = Math.floor((x - grid.x0) / CELL), j = Math.floor((z - grid.z0) / CELL); if (i < 0 || j < 0 || i >= grid.w || j >= grid.h) return 1; return grid.a[j * grid.w + i]; }
 const RING = Array.from({ length: 12 }, (_, i) => [Math.cos(i / 12 * Math.PI * 2), Math.sin(i / 12 * Math.PI * 2)]);
 function blocked(x, z) { if (cellAt(x, z) !== 2) return true; for (const [c, s] of RING) if (cellAt(x + c * RAD, z + s * RAD) === 1) return true; return false; }
@@ -293,14 +328,15 @@ function blocked(x, z) { if (cellAt(x, z) !== 2) return true; for (const [c, s] 
 
 /* ---------------- build a home from the plan ---------------- */
 function buildFromPlan(k, D) {
-  M = mats();
+  M = mats(); STY = STYLES[k] || STYLES[1];
   const A = D[k], s = A.mpp, cx = A.w / 2, cy = A.h / 2;
   const X = px => (px - cx) * s, Z = py => (py - cy) * s;
   const g = new THREE.Group(); floors = [];
-  grid = makeGrid(X(0), Z(0), X(A.w), Z(A.h));
+  grid = makeGrid(X(0), Z(0), X(A.w), Z(A.h)); wallA = new Uint8Array(grid.w * grid.h);
+  const FMAT = { marble: M.mfloor, kitchen: M.mfloor, oak: M.oak, bath: M.stone, balcony: M.balc };
   // floors and ceilings
   for (const [name, list] of Object.entries(A.floor)) {
-    const mat = M[name], ts = TEXM[name];
+    const mat = FMAT[name] || M.mfloor, ts = mat.userData.tm || 1;
     for (const [x0, y0, x1, y1] of list) {
       const w = (x1 - x0) * s, d = (y1 - y0) * s, geo = new THREE.PlaneGeometry(w, d); geo.rotateX(-Math.PI / 2); geo.translate(X(x0) + w / 2, 0, Z(y0) + d / 2);
       uvWorld(geo, ts, ts);
@@ -315,7 +351,7 @@ function buildFromPlan(k, D) {
     const w = (x1 - x0) * s, d = (y1 - y0) * s, x = X(x0) + w / 2, z = Z(y0) + d / 2;
     g.add(wallBox(w, CH, d, x, CH / 2, z));
     g.add(box(w + .02, .09, d + .02, M.skirt, x, .045, z));
-    gridRect(X(x0), Z(y0), X(x1), Z(y1), 1);
+    gridRect(X(x0), Z(y0), X(x1), Z(y1), 1); markWall(X(x0), Z(y0), X(x1), Z(y1));
   }
   for (const [x0, y0, x1, y1] of A.lintels) {
     const w = (x1 - x0) * s, d = (y1 - y0) * s; g.add(wallBox(w, CH - 2.15, d, X(x0) + w / 2, (CH + 2.15) / 2, Z(y0) + d / 2));
@@ -336,11 +372,12 @@ function buildFromPlan(k, D) {
       g.add(piece(0, L, 2.52, 2.56, M.frame, .07)); g.add(piece(0, L, 0, .03, M.frame, .07));
       if (open) { const sl = piece(Math.max(0, gl - .9), gl, 0, 2.55, M.glass, .02); sl.position[alongX ? 'z' : 'x'] += .07; g.add(sl); }   // the open slider, parked behind
       const inward = alongX ? Math.sign(cy - (y0 + y1) / 2) || 1 : Math.sign(cx - (x0 + x1) / 2) || 1;
-      for (const [a0, a1] of [[0, Math.min(.42, L * .18)], [L - Math.min(.42, L * .18), L]]) {
-        const cu = piece(a0, a1, .02, 2.5, M.sheer, .1); cu.position[alongX ? 'z' : 'x'] += inward * .16; cu.castShadow = false; g.add(cu);
-        const fo = Math.max(2, Math.round((a1 - a0) / .07)); for (let f = 0; f < fo; f++) { const fl = piece(a0 + (f + .2) * (a1 - a0) / fo, a0 + (f + .55) * (a1 - a0) / fo, .02, 2.5, M.sheer, .14); fl.position[alongX ? 'z' : 'x'] += inward * .16; fl.castShadow = false; g.add(fl); }
+      const cw = Math.min(.36, L * .15);
+      for (const [a0, a1, mat, off] of [[0, cw, M.drape, .2], [L - cw, L, M.drape, .2], [cw, cw * 1.9, M.sheer, .13], [L - cw * 1.9, L - cw, M.sheer, .13]]) {
+        const cu = piece(a0, a1, .02, SOF - .04, mat, .08); cu.position[alongX ? 'z' : 'x'] += inward * off; cu.castShadow = mat === M.drape; g.add(cu);
+        const fo = Math.max(2, Math.round((a1 - a0) / .08)); for (let f = 0; f < fo; f++) { const fl = piece(a0 + (f + .15) * (a1 - a0) / fo, a0 + (f + .6) * (a1 - a0) / fo, .02, SOF - .04, mat, .13); fl.position[alongX ? 'z' : 'x'] += inward * off; fl.castShadow = false; g.add(fl); }
       }
-      g.add(piece(0, L, 2.5, 2.53, M.frame, .03)).children; g.children[g.children.length - 1].position[alongX ? 'z' : 'x'] += inward * .16;
+      const rail = piece(0, L, SOF - .04, SOF - .01, M.frame, .03); rail.position[alongX ? 'z' : 'x'] += inward * .17; g.add(rail);
       const g0 = alongX ? [X(x0), Z(y0) - .02, X(x0) + gl, Z(y1) + .02] : [X(x0) - .02, Z(y0), X(x1) + .02, Z(y0) + gl];
       gridRect(g0[0], g0[1], g0[2], g0[3], 1);
       if (open) { const o = alongX ? [X(x0) + gl, Z(y0), X(x1), Z(y1)] : [X(x0), Z(y0) + gl, X(x1), Z(y1)]; gridRect(o[0], o[1], o[2], o[3], 2); }
@@ -357,20 +394,8 @@ function buildFromPlan(k, D) {
       gridRect(X(x0), Z(y0), X(x1), Z(y1), 1);
     }
   }
-  // downlights in every room, plus a few real lights
-  const lights = [];
-  for (const [name, list] of Object.entries(A.floor)) for (const [x0, y0, x1, y1] of list) {
-    const w = (x1 - x0) * s, d = (y1 - y0) * s; if (w < .6 || d < .6) continue;
-    const nx = Math.max(1, Math.round(w / 1.6)), nz = Math.max(1, Math.round(d / 1.6));
-    for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
-      const lx = X(x0) + (i + .5) * w / nx, lz = Z(y0) + (j + .5) * d / nz;
-      const dl = cyl(.045, .045, .01, M.down, lx, CH - .004, lz, 20); dl.castShadow = false; g.add(dl);
-    }
-  }
-  for (const r of A.rooms) {
-    const L = new THREE.PointLight(0xffcf94, 1.15, 7.5, 2); L.position.set(X(r[1]), CH - .35, Z(r[2])); g.add(L); lights.push(L);
-  }
   // furniture
+  const placed = [];
   for (const f of A.furn) {
     const [type, x0, y0, x1, y1, face] = f;
     const W = (x1 - x0) * s, Dp = (y1 - y0) * s, x = X(x0) + W / 2, z = Z(y0) + Dp / 2;
@@ -379,7 +404,88 @@ function buildFromPlan(k, D) {
     const o = FURN[type] ? FURN[type](side ? Dp : W, side ? W : Dp) : null;
     if (!o) continue;
     o.position.set(x, 0, z); o.rotation.y = rot; g.add(o);
-    if (!NOCOLLIDE.has(type)) gridRect(X(x0) + .02, Z(y0) + .02, X(x1) - .02, Z(y1) - .02, 1);
+    placed.push({ type, x, z, w: side ? Dp : W, d: side ? W : Dp, rot });
+    if (type === 'counter') {                    // a splashback only where the counter stands against a wall
+      const bxv = -Math.sin(rot), bzv = -Math.cos(rot), dd = (side ? W : Dp) / 2; let wall = false;
+      for (let t = dd - .05; t < dd + .2; t += CELL / 2) if (isWall(x + bxv * t, z + bzv * t)) { wall = true; break; }
+      if (!wall) { const sp = o.getObjectByName('splash'); if (sp) o.remove(sp); }
+    }
+    if (!NOCOLLIDE.has(type)) { const ins = Math.min(.06, W / 4, Dp / 4); gridRect(X(x0) + ins, Z(y0) + ins, X(x1) - ins, Z(y1) - ins, 1); }
+  }
+  // feature walls as in the renders: marble behind the TV, walnut with gold strips behind the bed
+  for (const p of placed) {
+    if (p.type !== 'tvunit' && p.type !== 'bed') continue;
+    const back = { x: -Math.sin(p.rot), z: -Math.cos(p.rot) };        // local -z (the back) in world space
+    let dist = null; for (let t = p.d / 2; t < p.d / 2 + .8; t += CELL / 2) if (isWall(p.x + back.x * t, p.z + back.z * t)) { dist = t; break; }
+    if (dist == null) continue;
+    const ax = { x: Math.cos(p.rot), z: -Math.sin(p.rot) };            // along the wall
+    const want = p.type === 'bed' ? p.w + 1.5 : p.w + .9, half = want / 2;
+    const reach = sgn => { let a = 0; while (a < half && isWall(p.x + back.x * (dist + .06) + ax.x * sgn * (a + .05), p.z + back.z * (dist + .06) + ax.z * sgn * (a + .05))) a += CELL; return a; };
+    const l = reach(-1), r = reach(1), width = l + r; if (width < .8) continue;
+    const mid = (r - l) / 2, cxw = p.x + back.x * (dist - .012) + ax.x * mid, czw = p.z + back.z * (dist - .012) + ax.z * mid;
+    const panel = new THREE.Group(); panel.position.set(cxw, 0, czw); panel.rotation.y = p.rot;
+    const top = SOF - .01, mat = p.type === 'bed' ? M.walnut : M.marble;
+    panel.add(box(width, top, .02, mat, 0, top / 2, 0));
+    const n = p.type === 'bed' ? 4 : 2;
+    for (let i = 1; i <= n; i++) { const xx = -width / 2 + i * width / (n + 1) * (p.type === 'bed' ? 1 : 1); if (p.type === 'tvunit' && Math.abs(xx) < .9) continue; panel.add(box(.012, top, .03, M.gold, xx, top / 2, .006)); }
+    if (p.type === 'tvunit') { panel.add(box(.012, top, .03, M.gold, -width / 2 + .25, top / 2, .006)); panel.add(box(.012, top, .03, M.gold, width / 2 - .25, top / 2, .006)); }
+    g.add(panel);
+  }
+  // bathrooms: marble on every wall, the floor in grey stone
+  for (const [bx0, by0, bx1, by1] of A.baths) {
+    const x0 = X(bx0), z0 = Z(by0), x1 = X(bx1), z1 = Z(by1);
+    const edges = [[x0, z0, x1, z0, 0, -1], [x0, z1, x1, z1, 0, 1], [x0, z0, x0, z1, -1, 0], [x1, z0, x1, z1, 1, 0]];
+    for (const [ax0, az0, ax1, az1, nx, nz] of edges) {
+      const L = Math.hypot(ax1 - ax0, az1 - az0), dx = (ax1 - ax0) / L, dz = (az1 - az0) / L; let run = null;
+      const flush = (a) => { if (run == null) return; const len = a - run; if (len > .15) { const mx = ax0 + dx * (run + len / 2) - nx * .01, mz = az0 + dz * (run + len / 2) - nz * .01;
+        g.add(box(Math.abs(dx) * len + Math.abs(nx) * .015, CH - .02, Math.abs(dz) * len + Math.abs(nz) * .015, M.marble, mx, (CH - .02) / 2, mz)); } run = null; };
+      for (let a = 0; a <= L; a += CELL) { const wx = ax0 + dx * a + nx * .09, wz = az0 + dz * a + nz * .09; const w = isWall(wx, wz) || isWall(wx + nx * .06, wz + nz * .06);
+        if (w && run == null) run = a; else if (!w) flush(a); }
+      flush(L);
+    }
+  }
+  // tray ceilings: a lowered border with a hidden warm LED cove, downlights in the border
+  const trays = [];
+  for (const [tx0, ty0, tx1, ty1] of A.trays) {
+    const x0 = X(tx0), z0 = Z(ty0), x1 = X(tx1), z1 = Z(ty1), b = .42, h = CH - SOF;
+    const W = x1 - x0, Dd = z1 - z0; trays.push([x0, z0, x1, z1]);
+    for (const [cxp, czp, ww, dd] of [[(x0 + x1) / 2, z0 + b / 2, W, b], [(x0 + x1) / 2, z1 - b / 2, W, b], [x0 + b / 2, (z0 + z1) / 2, b, Dd - 2 * b], [x1 - b / 2, (z0 + z1) / 2, b, Dd - 2 * b]]) {
+      const so = box(ww, h, dd, M.ceil, cxp, SOF + h / 2, czp); so.castShadow = false; g.add(so);
+    }
+    const iw = W - 2 * b, id = Dd - 2 * b;
+    for (const [cxp, czp, ww, dd, rot] of [[(x0 + x1) / 2, z0 + b, iw, .32, 0], [(x0 + x1) / 2, z1 - b, iw, .32, Math.PI], [x0 + b, (z0 + z1) / 2, id, .32, Math.PI / 2], [x1 - b, (z0 + z1) / 2, id, .32, -Math.PI / 2]]) {
+      const pg = new THREE.PlaneGeometry(ww, dd); pg.rotateX(Math.PI / 2); pg.translate(0, 0, dd / 2);
+      const pm = new THREE.Mesh(pg, M.cove); pm.position.set(cxp, CH - .004, czp); pm.rotation.y = rot; pm.renderOrder = 2; g.add(pm);
+      const strip = box(rot === 0 || rot === Math.PI ? ww : .015, .012, rot === 0 || rot === Math.PI ? .015 : ww, M.led, cxp, SOF + .02 + .006, czp); strip.castShadow = false; g.add(strip);
+    }
+    const per = 2 * (W + Dd), n = Math.max(4, Math.round(per / 1.3));
+    for (let i = 0; i < n; i++) { let t = (i + .5) / n * per, px, pz;
+      if (t < W) { px = x0 + t; pz = z0 + b / 2; } else if ((t -= W) < Dd) { px = x1 - b / 2; pz = z0 + t; } else if ((t -= Dd) < W) { px = x1 - t; pz = z1 - b / 2; } else { t -= W; px = x0 + b / 2; pz = z1 - t; }
+      const dl = cyl(.035, .035, .01, M.down, px, SOF - .004, pz, 16); dl.castShadow = false; g.add(dl); }
+    const L = new THREE.PointLight(0xffcf94, 1.0, 8, 2); L.position.set((x0 + x1) / 2, SOF - .3, (z0 + z1) / 2); g.add(L);
+  }
+  // downlights elsewhere (halls, kitchens, bathrooms) and a warm light per room without a tray
+  const inTray = (x, z) => trays.some(([a, b2, c, d]) => x > a && x < c && z > b2 && z < d);
+  for (const [name, list] of Object.entries(A.floor)) for (const [x0, y0, x1, y1] of list) {
+    const w = (x1 - x0) * s, d = (y1 - y0) * s; if (w < .6 || d < .6 || name === 'balcony') continue;
+    const nx = Math.max(1, Math.round(w / 1.5)), nz = Math.max(1, Math.round(d / 1.5));
+    for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
+      const lx = X(x0) + (i + .5) * w / nx, lz = Z(y0) + (j + .5) * d / nz; if (inTray(lx, lz)) continue;
+      const dl = cyl(.035, .035, .01, M.down, lx, CH - .004, lz, 16); dl.castShadow = false; g.add(dl);
+    }
+  }
+  for (const r of A.rooms) { const rx = X(r[1]), rz = Z(r[2]); if (inTray(rx, rz)) continue;
+    const L = new THREE.PointLight(0xffcf94, .85, 6.5, 2); L.position.set(rx, CH - .35, rz); g.add(L); }
+  // gold ring pendants over the dining tables
+  for (const p of placed) if (p.type === 'dtable') {
+    const pend = new THREE.Group(); pend.position.set(p.x, 0, p.z);
+    for (const [r, y] of [[.42, 2.02], [.3, 2.14], [.18, 2.24]]) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(r, .012, 10, 64), M.gold); ring.rotation.x = Math.PI / 2; ring.position.y = y; pend.add(ring);
+      const glow = new THREE.Mesh(new THREE.TorusGeometry(r, .006, 6, 64), M.led); glow.rotation.x = Math.PI / 2; glow.position.y = y - .012; pend.add(glow);
+    }
+    for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2; pend.add(cyl(.003, .003, CH - 2.02, M.gold, Math.cos(a) * .42, (CH + 2.02) / 2, Math.sin(a) * .42, 6)); }
+    const pl = new THREE.PointLight(0xffd8a8, .7, 4, 2); pl.position.y = 1.9; pend.add(pl);
+    g.add(pend);
   }
   // sun through the main glazing
   const gl = [...(A.open.g || []), ...(A.open.gd || [])];
@@ -400,42 +506,50 @@ const NOCOLLIDE = new Set(['rug', 'hob', 'sink', 'uppers']);
 function grp(...items) { const g = new THREE.Group(); for (const i of items) if (i) g.add(i); return g; }
 const FURN = {
   rug: (w, d) => { const m = box(w, .012, d, M.rug, 0, .006, 0); m.castShadow = false; return grp(m); },
-  sofa: (w, d) => sofa(w, d, true), sofaseg: (w, d) => sofa(w, d, false),
-  armchair: (w, d) => sofa(w, d, true, 1),
-  bchair: (w, d) => { const g = grp(box(w * .9, .36, d * .9, M.oak, 0, .18, 0, .03), box(w * .82, .1, d * .78, M.linen, 0, .41, .02, .04), box(w * .82, .42, .12, M.linen, 0, .62, -d * .4 + .06, .05)); return g; },
-  chair: (w, d) => { const g = grp(box(w * .9, .06, d * .8, M.fabric, 0, .46, .02, .02), box(w * .9, .42, .05, M.fabric, 0, .7, -d * .38, .02));
-    for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(.035, .45, .035, M.walnut, a * w * .38, .225, b * d * .32)); return g; },
-  dchair: (w, d) => grp(cyl(.22, .26, .04, M.black, 0, .03, 0), cyl(.025, .025, .38, M.steel, 0, .24, 0), box(w * .9, .08, d * .85, M.fabric2, 0, .47, 0, .03), box(w * .9, .45, .06, M.fabric2, 0, .78, -d * .4, .03)),
-  ctable: (w, d) => grp(box(w, .04, d, M.oak, 0, .4, 0, .01), box(w * .8, .36, d * .8, M.walnut, 0, .18, 0)),
-  rtable: (w, d) => { const r = Math.min(w, d) / 2; return grp(cyl(r, r, .035, M.marble, 0, .47, 0, 40), cyl(.04, .04, .45, M.gold, 0, .23, 0), cyl(r * .55, r * .6, .02, M.gold, 0, .01, 0)); },
-  dtable: (w, d) => { const g = grp(box(w, .045, d, M.oak, 0, .75, 0, .012)); for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(.06, .73, .06, M.walnut, a * (w / 2 - .08), .365, b * (d / 2 - .08))); return g; },
-  tvunit: (w, d) => { const tw = Math.min(w * .85, 1.6); return grp(box(w, .42, Math.max(d, .38), M.walnut, 0, .25, 0, .01), box(w * .98, .02, Math.max(d, .38) * .98, M.marble, 0, .47, 0),
-    box(tw, tw * .56, .04, M.tv, 0, 1.25, -d / 2 + .04, .01)); },
-  sideboard: (w, d) => grp(box(w, .62, d, M.walnut, 0, .35, 0, .01), box(w, .025, d, M.marble, 0, .67, 0)),
-  console: (w, d) => grp(box(w, .78, d, M.walnut, 0, .39, 0, .01), box(w, .02, d, M.marble, 0, .79, 0)),
-  dresser: (w, d) => grp(box(w, .82, d, M.walnut, 0, .41, 0, .01), box(w * .9, .012, .02, M.gold, 0, .6, d / 2), box(w * .9, .012, .02, M.gold, 0, .32, d / 2)),
-  shelf: (w, d) => grp(box(w, .46, d, M.walnut, 0, .23, 0, .01), box(w * .94, .3, d * .1, M.black, 0, .24, d * .46)),
+  sofa: (w, d) => sofa(w, d, true, 0, M.fabric), sofaseg: (w, d) => sofa(w, d, false, 0, M.fabric),
+  armchair: (w, d) => sofa(w, d, true, 1, M.fabric2),
+  bchair: (w, d) => grp(box(w * .9, .36, d * .9, M.walnut, 0, .18, 0, .03), box(w * .82, .1, d * .78, M.linen, 0, .41, .02, .04), box(w * .82, .42, .12, M.linen, 0, .62, -d * .4 + .06, .05)),
+  chair: (w, d) => { const g = grp(box(w * .9, .08, d * .8, M.head, 0, .47, .02, .03), box(w * .9, .45, .07, M.head, 0, .74, -d * .37, .03));
+    for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(.022, .44, .022, M.gold, a * w * .38, .22, b * d * .32)); return g; },
+  dchair: (w, d) => grp(cyl(.2, .24, .03, M.gold, 0, .02, 0), cyl(.022, .022, .38, M.gold, 0, .24, 0), box(w * .9, .1, d * .85, M.fabric2, 0, .47, 0, .04), box(w * .9, .42, .07, M.fabric2, 0, .76, -d * .4, .03)),
+  ctable: (w, d) => grp(box(w, .035, d, M.marble, 0, .41, 0, .008), box(w * .78, .36, d * .78, M.gold, 0, .2, 0, .005), box(w * .74, .37, d * .74, M.black, 0, .2, 0, .005)),
+  rtable: (w, d) => { const r = Math.min(w, d) / 2; return grp(cyl(r, r, .035, M.marble, 0, .47, 0, 48), cyl(.035, .035, .45, M.gold, 0, .23, 0), cyl(r * .55, r * .6, .02, M.gold, 0, .01, 0, 32)); },
+  dtable: (w, d) => { const g = grp(box(w, .04, d, M.marble, 0, .755, 0, .01)); for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(.035, .73, .035, M.gold, a * (w / 2 - .1), .365, b * (d / 2 - .1))); return g; },
+  tvunit: (w, d) => { const tw = Math.min(w * .85, 1.65), dd = Math.max(d, .4); return grp(box(w, .36, dd, M.walnut, 0, .38, 0, .006), box(w * .97, .01, .02, M.led, 0, .195, dd / 2 - .04),
+    box(tw, tw * .56, .04, M.tv, 0, 1.3, -d / 2 + .05, .01)); },
+  sideboard: (w, d) => grp(box(w, .6, d, M.walnut, 0, .36, 0, .006), box(w, .02, d, M.marble, 0, .67, 0), box(.02, .5, .01, M.gold, 0, .36, d / 2 + .003)),
+  console: (w, d) => grp(box(w, .03, d, M.marble, 0, .8, 0), box(w * .96, .76, d * .9, M.walnut, 0, .39, 0, .006)),
+  dresser: (w, d) => grp(box(w, .82, d, M.walnut, 0, .41, 0, .006), box(w * .92, .012, .02, M.gold, 0, .6, d / 2), box(w * .92, .012, .02, M.gold, 0, .32, d / 2)),
+  shelf: (w, d) => grp(box(w, .46, d, M.walnut, 0, .23, 0, .006), box(w * .94, .3, d * .1, M.black, 0, .24, d * .46)),
   bed: (w, d) => {
-    const g = grp(box(w, .3, d, M.fabric2, 0, .15, .04, .03), box(w * .96, .24, d * .9, M.linen, 0, .42, .06, .06),
-      box(w * .98, .1, d * .62, M.fabric2, 0, .56, d * .17, .05), box(w, 1.1, .1, M.fabric, 0, .55, -d / 2 + .05, .04), box(w * .98, .05, d * .16, M.fabric, 0, .62, d * .4, .02));
-    const n = w > 1.5 ? 2 : 1; for (let i = 0; i < n; i++) g.add(box(w / n * .8, .16, .36, M.linen, (i - (n - 1) / 2) * w / n, .62, -d / 2 + .3, .07));
+    const g = grp(box(w, .3, d - .06, M.head, 0, .17, .03, .04), box(w * .96, .24, d * .88, M.linen, 0, .42, .06, .06),
+      box(w * .99, .1, d * .64, M.linen, 0, .56, d * .17, .05), box(w * 1.0, .05, d * .2, M.throw, 0, .62, d * .34, .02));
+    const hb = box(w + .1, 1.25, .12, M.head, 0, .63, -d / 2 + .06, .03); g.add(hb);
+    const nb = Math.max(3, Math.round(w / .4)); for (let i = 1; i < nb; i++) g.add(box(.012, 1.0, .02, M.fabric2, -w / 2 - .05 + i * (w + .1) / nb, .72, -d / 2 + .125));
+    const n = w > 1.5 ? 2 : 1;
+    for (let i = 0; i < n; i++) { const px = (i - (n - 1) / 2) * w / n; g.add(box(w / n * .78, .17, .36, M.linen, px, .64, -d / 2 + .3, .07)); g.add(box(w / n * .55, .3, .12, M.fabric2, px, .7, -d / 2 + .5, .05)); }
+    for (const sx of [-1, 1]) g.add(box(.04, .12, .04, M.gold, sx * (w / 2 - .1), .03, d / 2 - .12));
     return g;
   },
-  nstand: (w, d) => grp(box(w, .52, d, M.walnut, 0, .26, 0, .01), cyl(.05, .07, .22, M.gold, 0, .64, 0, 20), cyl(.1, .14, .17, M.lampOn, 0, .83, 0, 24)),
+  nstand: (w, d) => grp(box(w, .5, d, M.black, 0, .28, 0, .006), box(w * .9, .01, .02, M.gold, 0, .4, d / 2 + .002), box(w * .9, .01, .02, M.gold, 0, .2, d / 2 + .002),
+    cyl(.045, .06, .26, M.gold, 0, .66, 0, 20), box(.3, .2, .22, M.lampOn, 0, .87, 0, .01)),
   flamp: (w, d) => grp(cyl(.14, .16, .03, M.black, 0, .015, 0), cyl(.015, .015, 1.55, M.gold, 0, .79, 0, 12), cyl(.16, .22, .26, M.lampOn, 0, 1.55, 0, 28)),
-  desk: (w, d) => grp(box(w, .035, d, M.walnut, 0, .75, 0, .01), box(.035, .74, d, M.walnut, -w / 2 + .02, .37, 0), box(.035, .74, d, M.walnut, w / 2 - .02, .37, 0)),
-  wardrobe: (w, d) => { const g = grp(box(w, 2.4, d, M.walnut, 0, 1.2, 0, .01)); const n = Math.max(1, Math.round(w / .5)); for (let i = 1; i < n; i++) g.add(box(.006, 2.3, .01, M.black, -w / 2 + i * w / n, 1.2, d / 2 + .001)); for (let i = 0; i < n; i++) g.add(box(.012, .5, .02, M.gold, -w / 2 + (i + .5) * w / n + (i % 2 ? -.06 : .06), 1.2, d / 2 + .01)); return g; },
-  counter: (w, d) => grp(box(w, .78, d - .04, M.walnut, 0, .48, -.02, .005), box(w, .09, d - .1, M.black, 0, .045, -.05), box(w, .035, d, M.marble, 0, .885, 0, .004)),
-  uppers: (w, d) => grp(box(w, .72, Math.min(d, .36), M.walnut, 0, 1.86, -d / 2 + Math.min(d, .36) / 2, .005), box(w * .98, .01, .02, M.led, 0, 1.495, -d / 2 + Math.min(d, .36) - .03)),
+  desk: (w, d) => grp(box(w, .035, d, M.walnut, 0, .75, 0, .006), box(.025, .74, d * .9, M.gold, -w / 2 + .04, .37, 0), box(.025, .74, d * .9, M.gold, w / 2 - .04, .37, 0)),
+  wardrobe: (w, d) => { const g = grp(box(w, SOF - .02, d, M.walnut, 0, (SOF - .02) / 2, 0, .006)); const n = Math.max(1, Math.round(w / .5));
+    for (let i = 1; i < n; i++) g.add(box(.006, SOF - .1, .01, M.black, -w / 2 + i * w / n, SOF / 2, d / 2 + .001));
+    for (let i = 0; i < n; i++) g.add(box(.012, .6, .02, M.gold, -w / 2 + (i + .5) * w / n + (i % 2 ? -.07 : .07), 1.15, d / 2 + .01)); return g; },
+  counter: (w, d) => grp(box(w, .78, d - .04, M[STY.kLow], 0, .48, -.02, .004), box(w, .09, d - .1, M.black, 0, .045, -.05), box(w, .035, d, M.marble, 0, .885, 0, .004),
+    Object.assign(box(w, .56, .012, M.splash, 0, 1.19, -d / 2 + .006), { name: 'splash' })),
+  uppers: (w, d) => { const dd = Math.min(d, .36); return grp(box(w, .72, dd, M[STY.kUp], 0, 1.86, -d / 2 + dd / 2, .004), box(w * .98, .01, .02, M.led, 0, 1.495, -d / 2 + dd - .03)); },
   fridge: (w, d) => grp(box(w, 1.95, d, M.steel, 0, .975, 0, .01), box(.02, .7, .03, M.black, w * .35, 1.3, d / 2)),
   appliance: (w, d) => grp(box(w, .86, d, M.steel, 0, .43, 0, .01), box(w * .7, .5, .01, M.black, 0, .45, d / 2 + .002)),
   hob: (w, d) => grp(box(w, .008, d, M.black, 0, .907, 0)),
-  sink: (w, d) => grp(box(w, .006, d, M.steel, 0, .906, 0), cyl(.012, .012, .3, M.steel, 0, 1.05, -d / 2 + .03, 12), box(.02, .02, .18, M.steel, 0, 1.19, -d / 2 + .11)),
-  tub: (w, d) => { const g = grp(box(w, .56, d, M.ceramic, 0, .28, 0, Math.min(w, d) * .25), box(w * .84, .04, d * .8, new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: .1 }), 0, .55, 0, Math.min(w, d) * .2)); return g; },
-  toilet: (w, d) => grp(box(w * .9, .4, d * .8, M.ceramic, 0, .2, d * .1, .12), box(w * .95, .5, .18, M.ceramic, 0, .65, -d / 2 + .09, .03)),
-  vanity: (w, d) => grp(box(w, .42, d, M.walnut, 0, .64, 0, .01), box(w, .03, d, M.marble, 0, .865, 0), box(Math.min(w * .6, .5), .12, d * .6, M.ceramic, 0, .93, .02, .05),
-    box(w * .9, .9, .02, M.mirror, 0, 1.55, -d / 2 + .02), box(w * .9, .012, .03, M.led, 0, 1.08, -d / 2 + .04)),
-  sglass: (w, d) => grp(box(w, 2.0, d, M.glass, 0, 1.0, 0), box(w, .03, d, M.frame, 0, 2.0, 0)),
+  sink: (w, d) => grp(box(w, .006, d, M.steel, 0, .906, 0), cyl(.012, .012, .3, M.black, 0, 1.05, -d / 2 + .03, 12), box(.02, .02, .18, M.black, 0, 1.19, -d / 2 + .11)),
+  tub: (w, d) => grp(box(w, .56, d, M.ceramic, 0, .28, 0, Math.min(w, d) * .25), box(w * .84, .04, d * .8, new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: .1 }), 0, .55, 0, Math.min(w, d) * .2)),
+  toilet: (w, d) => grp(box(w * .9, .38, d * .8, M.ceramic, 0, .4, d * .1, .12), box(w * .95, .55, .1, M.marble, 0, .6, -d / 2 + .05, .01)),
+  vanity: (w, d) => grp(box(w, .38, d, M.walnut, 0, .62, 0, .006), box(w, .04, d, M.marble, 0, .83, 0), box(Math.min(w * .6, .5), .12, d * .6, M.ceramic, 0, .91, .02, .05),
+    box(w * .9, .9, .02, M.mirror, 0, 1.55, -d / 2 + .03), box(w * .94, .94, .01, M.led, 0, 1.55, -d / 2 + .018), box(w * .98, .012, .03, M.led, 0, .43, d / 2 - .03)),
+  sglass: (w, d) => grp(box(w, 2.0, d, M.glass, 0, 1.0, 0), box(w, .03, d, M.black, 0, 2.0, 0)),
   plant: (w, d) => {
     const r = Math.min(w, d) / 2, g = grp(cyl(r * .62, r * .5, .42, M.pot, 0, .21, 0, 28)); const rr = rng(Math.round(w * 1000));
     for (let i = 0; i < 9; i++) { const sph = new THREE.Mesh(new THREE.IcosahedronGeometry(r * (.35 + rr() * .3), 1), i % 2 ? M.leaf : M.leaf2);
@@ -443,16 +557,16 @@ const FURN = {
     return g;
   },
 };
-function sofa(w, d, arms, single) {
+function sofa(w, d, arms, single, F) {
   const g = new THREE.Group(), ah = .62, aw = arms ? .16 : 0;
-  g.add(box(w, .36, d, M.fabric, 0, .2, 0, .04));
-  g.add(box(w, .5, .2, M.fabric, 0, .55, -d / 2 + .1, .06));
-  if (arms) { g.add(box(aw, ah, d, M.fabric, -w / 2 + aw / 2, ah / 2, 0, .06)); g.add(box(aw, ah, d, M.fabric, w / 2 - aw / 2, ah / 2, 0, .06)); }
+  g.add(box(w, .36, d, F, 0, .2, 0, .04));
+  g.add(box(w, .5, .2, F, 0, .55, -d / 2 + .1, .06));
+  if (arms) { g.add(box(aw, ah, d, F, -w / 2 + aw / 2, ah / 2, 0, .06)); g.add(box(aw, ah, d, F, w / 2 - aw / 2, ah / 2, 0, .06)); }
   const inner = w - aw * 2, n = single ? 1 : Math.max(1, Math.round(inner / .75));
   for (let i = 0; i < n; i++) {
     const cxp = -inner / 2 + (i + .5) * inner / n;
-    g.add(box(inner / n - .02, .13, d - .26, M.fabric, cxp, .44, .08, .05));
-    g.add(box(inner / n - .04, .42, .14, M.fabric, cxp, .66, -d / 2 + .24, .06));
+    g.add(box(inner / n - .02, .13, d - .26, F, cxp, .44, .08, .05));
+    g.add(box(inner / n - .04, .42, .14, F, cxp, .66, -d / 2 + .24, .06));
   }
   if (!single && inner > 1.2) { g.add(box(.36, .34, .1, M.fabric2, -inner / 2 + .3, .66, -d / 2 + .34, .05)); g.add(box(.36, .34, .1, M.fabric2, inner / 2 - .3, .66, -d / 2 + .34, .05)); }
   g.add(box(.05, .06, .05, M.gold, -w / 2 + .1, .03, -d / 2 + .1)); g.add(box(.05, .06, .05, M.gold, w / 2 - .1, .03, d / 2 - .1));
@@ -646,11 +760,24 @@ function updateMap() {
 }
 let roomI = -1, jumpAt = null;
 function updateRoom() {
-  if (!cur || !cur.rooms.length) return; if (jumpAt && (performance.now() - jumpAt.t < 600 || Math.hypot(P.x - jumpAt.x, P.z - jumpAt.z) < .6)) return; jumpAt = null; let bi = 0, bd = 1e9;
+  if (!cur || !cur.rooms.length) return; if (jumpAt && (performance.now() - jumpAt.t < 900 || Math.hypot(P.x - jumpAt.x, P.z - jumpAt.z) < 1.0)) return; jumpAt = null; let bi = 0, bd = 1e9;
   cur.rooms.forEach((r, i) => { const d = Math.hypot(r.x - P.x, r.z - P.z); if (d < bd) { bd = d; bi = i; } });
   if (bi !== roomI) { roomI = bi; ui.wRooms.querySelectorAll('[data-r]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === bi)); }
 }
 
+/* reflections: a 360 degree snapshot taken inside the apartment, so marble, glass and metal reflect the real rooms */
+let envRT = null, pmrem = null;
+function captureEnv() {
+  if (!cur || !cur.rooms.length) return;
+  if (!pmrem) pmrem = new THREE.PMREMGenerator(renderer);
+  const r = cur.rooms[0], s = nearestFree(r.x, r.z) || r;
+  const rt = new THREE.WebGLCubeRenderTarget(256, { generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+  const cc = new THREE.CubeCamera(.05, 300, rt); cc.position.set(s.x, 1.45, s.z);
+  const mv = marker.visible; marker.visible = false; scene.add(cc); cc.update(renderer, scene); scene.remove(cc); marker.visible = mv;
+  if (envRT) envRT.dispose();
+  envRT = pmrem.fromCubemap(rt.texture); rt.dispose();
+  scene.environment = envRT.texture;
+}
 /* ---------------- public ---------------- */
 function disposeHome() {
   if (!home) return; scene.remove(home);
@@ -670,9 +797,10 @@ async function open(o) {
     const cfg = MODELS[o.type];
     disposeHome();
     if (cfg) { ui.wLoadT.textContent = 'Loading the 3D model'; cur = await buildFromGLB(o.type, cfg, f => ui.wLoadB.style.width = (35 + f * 60) + '%'); ui.wNote.textContent = cfg.note || ''; }
-    else { const D = await loadData(); ui.wLoadB.style.width = '70%'; await new Promise(r => setTimeout(r, 30)); cur = buildFromPlan(o.type, D);
+    else { const D = await loadData(); await loadRenderTextures(); scene.environment = envTex; ui.wLoadB.style.width = '70%'; await new Promise(r => setTimeout(r, 30)); cur = buildFromPlan(o.type, D);
       ui.wNote.textContent = 'Built to scale from Rockhill’s floor plan. Finishes and furniture are indicative.'; }
     home = cur.group; scene.add(home);
+    captureEnv();
     ui.wRooms.innerHTML = cur.rooms.map((r, i) => `<button data-r="${i}" aria-pressed="false">${r.n}</button>`).join('') + '<button class="back">Back to the tower</button>';
     roomI = -1;
     if (cur.map) { ui.wMap.style.display = ''; ui.wMapImg.src = cur.map.img; ui.wMap.style.aspectRatio = cur.map.w + '/' + cur.map.h; } else ui.wMap.style.display = 'none';
