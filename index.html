@@ -83,6 +83,9 @@ nav a:hover{color:var(--gold2)}
 .facts{display:flex;gap:18px;flex-wrap:wrap;grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px}
 .facts b{display:block;font:400 19px/1.1 'Josefin Sans',sans-serif;white-space:nowrap}
 .facts span{font-size:13px;color:#d0d5de}
+.mtoggle{grid-column:1/-1;justify-self:start;min-height:36px;padding:0 14px;border-radius:18px;border:1px dashed rgba(236,201,111,.6);background:rgba(210,170,75,.1);color:#f1e4c2;font:400 13px/1.2 Montserrat,sans-serif;cursor:pointer}
+.mtoggle b{color:var(--gold2);font-weight:600}
+.mtoggle:hover{background:rgba(210,170,75,.22)}
 .err{color:#ffb4a8;font-size:13px;margin:0;grid-column:1/-1}
 .tip{position:fixed;z-index:30;pointer-events:none;background:#131518f2;border:1px solid var(--gold);padding:7px 10px;font-size:13px;white-space:nowrap;transform:translate(16px,-50%) scale(.96);opacity:0;border-radius:6px;transition:opacity .22s,transform .25s,left .16s ease-out,top .16s ease-out}
 .tip.show{opacity:1;transform:translate(16px,-50%) scale(1)}
@@ -411,7 +414,11 @@ for(let l=FIRST;l<=TOP;l++){
   UNITS[l]=pos.map((x,i)=>({no:String(l*100+i+1),t:x.t,free:r()>sold}));
 }
 const $=id=>document.getElementById(id);
-const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sysReduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let forceMo=false;try{forceMo=localStorage.getItem('rh-motion')==='on'}catch(e){}
+const reduce=sysReduce&&!forceMo;
+/* devices with animations turned off get a one-click switch: the flight and camera moves are the point of this site */
+const MTOGGLE=()=>sysReduce?`<button class="mtoggle" id="mToggle" aria-pressed="${forceMo}">${forceMo?'Animations on · turn off':'Animations are off on this device · <b>Turn on</b>'}</button>`:'';
 const narrow=()=>innerWidth<=1100;
 /* ---------- motion (Framer Motion's vanilla engine) ---------- */
 const MO=window.Motion&&!reduce?window.Motion:null;
@@ -502,7 +509,7 @@ const pad=l=>String(l).padStart(2,'0');
 const ddBtnHTML=()=>`<button class="ddbtn" id="ddBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ddList" ${sel?`aria-label="Floor ${sel}. Choose a floor"`:''}>${sel?`<b>FLOOR <span class="odo" id="odoF"></span></b>`:'Choose a floor'}${CHEV}</button>`;
 function panelIntro(){
   panel.innerHTML=`<div><h2 class="ptitle">Choose your floor</h2><p class="hint">Move over the tower and click a floor, or pick one here.</p></div>
-   <span></span>${ddBtnHTML()}${FACTS}`;
+   <span></span>${ddBtnHTML()}${FACTS}${MTOGGLE()}`;
   bindDD();
 }
 let loadErr=false;
@@ -513,7 +520,7 @@ function panelFloor(){
   panel.innerHTML=`<div class="pa">${ddBtnHTML()}<div class="steps"><button data-step="1" aria-label="Floor above">▲</button><button data-step="-1" aria-label="Floor below">▼</button></div></div>
    <div class="types" role="group" aria-label="Home type">${byType.map(x=>`<button data-t="${x.k}" aria-pressed="${x.k===selType}" ${x.av&&x.k!=='3'?'':'disabled'}>${TYPES[x.k].n}<span>${x.k==='3'?'plan on request':x.av+' of '+x.all+' free'}</span></button>`).join('')}</div>
    <button class="gbtn" id="enter" ${selType?'':'disabled'}>${selType?`Enter floor ${sel}`:'No homes free'}</button>
-   <p class="av"><b><span class="odo" id="odoA" aria-hidden="true"></span><span class="sr">${fr.length}</span> homes available</b> of ${UNITS[sel].length} on level ${sel}. Availability is sample data.</p>
+   <p class="av"><b><span class="odo" id="odoA" aria-hidden="true"></span><span class="sr">${fr.length}</span> homes available</b> of ${UNITS[sel].length} on level ${sel}. Availability is sample data.</p>${MTOGGLE()}
    ${loadErr?'<p class="err">The 3D view could not load. Check your connection and try again.</p>':''}`;
   bindDD();
   const tb=panel.querySelector('.types');movePill(tb,tb.querySelector('[aria-pressed=true]'),'tpill',false);
@@ -528,6 +535,7 @@ function select(l,quiet){
   if(narrow()&&!quiet)panel.scrollIntoView({behavior:reduce?'auto':'smooth',block:'nearest'});
 }
 panel.addEventListener('click',e=>{
+  if(e.target.closest('#mToggle')){try{localStorage.setItem('rh-motion',forceMo?'off':'on')}catch(err){}location.reload();return}
   const s=e.target.closest('[data-step]'),t=e.target.closest('[data-t]');
   if(s){select(sel+ +s.dataset.step,true)}else if(t&&!t.disabled){selType=t.dataset.t;panel.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-pressed',b===t));movePill(t.parentElement,t,'tpill',true)}else if(e.target.id==='enter')flyIn();
 });
