@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rockhill Tower · Choose your floor</title>
+<meta name="description" content="Rockhill Tower in Al Alia, Ajman: 416 freehold homes from studios to three bedrooms. Choose your floor on the tower and walk through each home in 3D.">
+<meta name="theme-color" content="#131518">
+<meta property="og:title" content="Rockhill Tower · A new standard of living in Ajman">
+<meta property="og:description" content="Choose your floor on the tower and walk through each home in 3D. 416 freehold homes in Al Alia, Ajman.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23131518'/%3E%3Ctext x='32' y='45' font-family='Arial,sans-serif' font-size='38' font-weight='300' text-anchor='middle' fill='%23D2AA4B'%3ER%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: quiet, premium launch film; Rockhill's own renders carry it.
+   IDEA: the sales-gallery model: pick a floor on the lit tower, fly in, walk the home room by room.
+   PICTURE: Rockhill Tower over the Ajman evening skyline, floors traced; the plan rises into a 3D home.
+   COLOUR & TYPE: Rockhill night #131518, LED gold #D2AA4B, dusk blue; Josefin Sans light + Montserrat (their brochure).
+   LAYOUT: hero = picture with title and floating floor panel; tour full screen; brochure sections below. */
+:root{color-scheme:dark;--bg:#131518;--bg2:#1a1c20;--card:#202226;--ink:#f3f0ea;--mute:#a6a39c;--gold:#D2AA4B;--gold2:#ecc96f;--line:rgba(255,255,255,.12);--glass:rgba(16,22,38,.62)}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Montserrat,system-ui,sans-serif;overflow-x:clip}
+img{display:block;max-width:100%}
+h1,h2,h3{font-family:'Josefin Sans',sans-serif;font-weight:300;margin:0;line-height:1.05;text-wrap:balance}
+h2{font-size:clamp(34px,4.4vw,52px)}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.band{padding:clamp(48px,7vw,104px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.lede{color:#cfcbc2;font-size:17px;max-width:60ch}
+.k{color:var(--gold);font-size:14px;font-weight:500;margin:0 0 14px}
+.gbtn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:8px;background:var(--gold);color:#131518;text-decoration:none;font-weight:600;font-size:15px;border:0}
+.gbtn:hover{background:var(--gold2);box-shadow:0 10px 26px -12px rgba(210,170,75,.8)}
+/* motion: soft press on every button, smooth state colours */
+.gbtn,.ghost,.types button,.steps button,.ddbtn,.rooms button,.ddfoot{transition:background-color .25s,border-color .25s,color .25s,box-shadow .3s,transform .35s cubic-bezier(.2,.9,.25,1.25)}
+.gbtn:active,.ghost:active,.types button:active,.steps button:active,.ddbtn:active,.rooms button:active{transform:scale(.95);transition-duration:.08s}
+.gbtn:disabled{background:#4b4f57;color:#c8ccd4;cursor:default}
+
+header{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px max(3vw,16px)}
+.logo{display:flex;flex-direction:column;line-height:1;text-decoration:none}
+.logo b{font:300 26px/1 'Josefin Sans',sans-serif;letter-spacing:.04em}
+.logo span{font-size:10px;letter-spacing:.42em;color:#d6d9e0;margin-top:4px}
+nav{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+nav a{text-decoration:none;font-size:14px;color:#e8eaee;padding:10px 12px;min-height:44px;display:flex;align-items:center;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+nav a:hover{color:var(--gold2)}
+
+/* hero: the whole 4K picture, never cropped or stretched out of shape */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hero{position:relative;background:#0b1a44}
+.bwrap{display:none;position:relative;container-type:inline-size;overflow:hidden}
+.banner{display:block;width:100%;height:auto;aspect-ratio:3840/2640}
+.stagewrap{container-type:inline-size}
+.hov{position:absolute;inset:0;pointer-events:none;color:#fff;text-shadow:0 2px 18px rgba(20,10,30,.35)}
+.hov .ht{position:absolute;left:5.2cqw;top:17cqw;margin:0;font:200 5.2cqw/.98 'Josefin Sans',sans-serif;letter-spacing:.03em}
+.hov .hs{position:absolute;left:5.35cqw;top:29cqw;margin:0;font:300 2.15cqw/1.25 'Josefin Sans',sans-serif;letter-spacing:.02em;color:#f3ece4}
+.hov .hb{position:absolute;left:66cqw;top:8.2cqw;width:27cqw;display:flex;flex-direction:column;align-items:center}
+.hov .hb img{width:7.4cqw;height:auto;margin-bottom:1.3cqw}
+.hov .hb b{font:300 3.35cqw/1 'Josefin Sans',sans-serif;letter-spacing:.14em;padding-left:.14em}
+.hov .hb i{display:block;width:16.5cqw;height:max(1px,.07cqw);background:#fff;margin:1cqw 0 .9cqw;opacity:.9}
+.hov .hb span{font:400 1.02cqw/1 Montserrat,sans-serif;letter-spacing:.62em;padding-left:.62em}
+.stagewrap{position:relative;overflow:hidden}
+.stage{position:relative;transform-origin:0 0;will-change:transform}
+.stage svg{display:block;width:100%;height:auto;aspect-ratio:3840/2640}
+.stage .fl{fill:var(--gold);fill-opacity:0;stroke:var(--gold2);stroke-opacity:0;stroke-width:3;stroke-linejoin:round;cursor:pointer;transition:fill-opacity .15s,stroke-opacity .15s;outline:none}
+.stage .fl.p{fill:#8792a3;cursor:default}
+.stage .fl.on,.stage .fl:focus-visible{fill-opacity:.3;stroke-opacity:.9}
+.stage .fl:focus-visible{stroke:#fff;stroke-width:5}
+.stage .fl.sel{fill-opacity:.45;stroke-opacity:1;filter:drop-shadow(0 0 10px #d2aa4b)}
+.stage .fl.p.on{fill-opacity:.2;stroke-opacity:0}
+.panel{position:absolute;z-index:5;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);border-radius:14px;padding:14px 16px;box-shadow:0 24px 50px -20px rgba(0,0,0,.6);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px 18px;align-items:center}
+.ptitle{font:500 15px/1.3 Montserrat,sans-serif;color:#fff;margin:0}
+.panel .hint{color:#d0d5de;font-size:13px;margin:2px 0 0}
+.pa{display:flex;align-items:center;gap:12px}
+.num{font:300 46px/1 'Josefin Sans',sans-serif}
+.num small{display:block;font:500 13px/1 Montserrat,sans-serif;color:#d0d5de;margin-bottom:4px}
+.steps{display:flex;flex-direction:column;gap:4px}
+.steps button{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line);color:#fff;font-size:14px}
+.steps button:hover{border-color:var(--gold)}
+.av{font-size:13px;color:#d0d5de;grid-column:1/-1;margin:0}
+.av b{color:var(--gold2);font-weight:500}
+.types{display:flex;flex-wrap:wrap;gap:6px}
+.types button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:48px;padding:4px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid transparent;color:#fff;font-size:14px;text-align:left;line-height:1.2}
+.types button span{color:#d0d5de;font-size:13px;white-space:nowrap}
+.types{position:relative}
+.types button{position:relative;z-index:1}
+.types button[aria-pressed=true]{color:#fff}
+.panel{container:pnl/inline-size}
+@media(min-width:1101px){@container pnl (max-width:660px){
+ .panel .types{grid-column:1/-1;grid-row:2}
+ .panel .types button{flex:1 1 calc(50% - 6px);white-space:nowrap}
+ .panel #enter{grid-column:2/-1;grid-row:1;justify-self:end}
+}}
+.tpill{position:absolute;z-index:0;border:1px solid var(--gold);background:rgba(210,170,75,.16);border-radius:8px;pointer-events:none;box-shadow:0 0 18px -6px rgba(210,170,75,.6)}
+.types button:disabled{opacity:.45;cursor:default}
+.pick{min-height:44px;background:rgba(0,0,0,.25);color:#fff;border:1px solid var(--line);border-radius:8px;padding:0 10px;font:inherit;font-size:16px}
+.facts{display:flex;gap:18px;flex-wrap:wrap;grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px}
+.facts b{display:block;font:400 19px/1.1 'Josefin Sans',sans-serif;white-space:nowrap}
+.facts span{font-size:13px;color:#d0d5de}
+.mtoggle{grid-column:1/-1;justify-self:start;min-height:36px;padding:0 14px;border-radius:18px;border:1px dashed rgba(236,201,111,.6);background:rgba(210,170,75,.1);color:#f1e4c2;font:400 13px/1.2 Montserrat,sans-serif;cursor:pointer}
+.mtoggle b{color:var(--gold2);font-weight:600}
+.mtoggle:hover{background:rgba(210,170,75,.22)}
+.err{color:#ffb4a8;font-size:13px;margin:0;grid-column:1/-1}
+.tip{position:fixed;z-index:30;pointer-events:none;background:#131518f2;border:1px solid var(--gold);padding:7px 10px;font-size:13px;white-space:nowrap;transform:translate(16px,-50%) scale(.96);opacity:0;border-radius:6px;transition:opacity .22s,transform .25s,left .16s ease-out,top .16s ease-out}
+.tip.show{opacity:1;transform:translate(16px,-50%) scale(1)}
+.tip b{font-family:'Josefin Sans',sans-serif;font-weight:400;color:var(--gold2);margin-right:6px;font-size:15px}
+.pickhead{display:none}
+.glide{pointer-events:none}
+/* odometer digits: each column is a strip 0-9-0 that slides continuously */
+.odo{display:inline-flex;vertical-align:top;margin-top:-.05em;height:1.1em;overflow:hidden;font-variant-numeric:tabular-nums;-webkit-mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent)}
+.odc{display:block;height:1.1em;overflow:hidden}
+.ods{display:block;will-change:transform}
+.ods i{display:block;height:1.1em;line-height:1.1em;font-style:normal;text-align:center}
+.odo.one .odc:first-child{display:none}
+#hl{fill:var(--gold);fill-opacity:.28;stroke:var(--gold2);stroke-opacity:.85;stroke-width:3}
+#hl.pk{fill:#8792a3;stroke-opacity:0}
+#sl{fill:var(--gold);fill-opacity:.45;stroke:var(--gold2);stroke-width:3;filter:drop-shadow(0 0 12px #d2aa4b)}
+.m .dd{animation:none}
+/* floor dropdown: frosted glass list, as in the reference */
+.ddbtn{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:210px;min-height:50px;padding:0 16px 0 18px;border-radius:12px;border:1px solid rgba(255,255,255,.24);background:linear-gradient(rgba(255,255,255,.10),rgba(255,255,255,.04));color:#eef2fa;font:300 17px/1 Montserrat,sans-serif;letter-spacing:.01em;backdrop-filter:blur(10px)}
+.ddbtn:hover{border-color:rgba(255,255,255,.4)}
+.ddbtn[aria-expanded=true] svg{transform:rotate(180deg)}
+.ddbtn svg{transition:transform .2s;flex:none}
+.ddbtn b{font-weight:400;letter-spacing:.08em}
+.dd{position:fixed;z-index:60;padding:8px;border-radius:14px;border:1px solid rgba(255,255,255,.22);background:linear-gradient(170deg,rgba(92,116,160,.42),rgba(26,40,74,.62));backdrop-filter:blur(24px) saturate(1.35);-webkit-backdrop-filter:blur(24px) saturate(1.35);box-shadow:0 28px 60px -18px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.12);transform-origin:50% 0;animation:ddIn .16s ease-out;outline:none}
+.dd.up{transform-origin:50% 100%}
+.dd[hidden]{display:none}
+@keyframes ddIn{from{opacity:0;transform:translateY(-4px) scale(.985)}to{opacity:1;transform:none}}
+.ddscroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.45) transparent;padding-right:4px}
+.ddscroll::-webkit-scrollbar{width:5px}.ddscroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.45);border-radius:3px}
+.opt{transition:background-color .18s,color .18s,box-shadow .25s;display:flex;align-items:center;justify-content:space-between;min-height:34px;padding:0 14px 0 20px;border-radius:9px;color:#e6ebf5;font:400 15px/1 Montserrat,sans-serif;letter-spacing:.09em;cursor:pointer;user-select:none}
+.opt svg{opacity:0;flex:none}
+.opt.act{background:rgba(255,255,255,.09)}
+.opt[aria-selected=true]{background:linear-gradient(90deg,#a9cdff,#5f93f2);color:#0c1a38;font-weight:500;box-shadow:0 6px 18px -8px rgba(80,140,255,.7)}
+.opt[aria-selected=true] svg{opacity:1}
+.opt[aria-selected=true].act{outline:2px solid rgba(255,255,255,.7);outline-offset:-2px}
+.ddfoot{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;padding:14px 12px 8px 20px;border:0;border-top:1px solid rgba(255,255,255,.14);background:none;color:#cfd8e8;font:400 13px/1.3 Montserrat,sans-serif;letter-spacing:.07em;text-align:left;text-transform:uppercase}
+.ddfoot span{flex:1}
+.ddfoot small{display:block;margin-top:3px;font-size:12px;letter-spacing:.04em;text-transform:none;color:#aeb9cc}
+.ddfoot:hover{color:#fff}
+@media(prefers-reduced-motion:reduce){.dd{animation:none}.ddbtn svg{transition:none}}
+.panel,header{transition:opacity .5s}
+body.flying .panel,body.flying header{opacity:0;pointer-events:none}
+.logo{visibility:hidden}
+
+/* flight + tour */
+#flash{position:fixed;inset:0;z-index:48;background:radial-gradient(circle,#2a2a2d,#131518);opacity:0;pointer-events:none;transition:opacity .45s}
+#tour{position:fixed;inset:0;z-index:50;background:#2a2a2d;display:none}
+#tour.open{display:block}
+#tour canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.tt{position:absolute;top:18px;left:max(3vw,16px);z-index:2;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:12px;padding:14px 18px;max-width:min(420px,80vw);opacity:0;transition:opacity .5s}
+.tt p{margin:0;color:var(--gold2);font-size:13px;font-weight:500}
+.tt h2{font-size:clamp(28px,3.4vw,40px);margin-top:4px}
+.tt .sub{color:#d0d5de;font-size:13.5px;margin-top:6px}
+.rooms{position:absolute;left:50%;bottom:max(2vh,14px);transform:translateX(-50%);z-index:2;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:12px;max-width:94vw;opacity:0;transition:opacity .5s}
+.rooms button{min-height:44px;padding:0 14px;border-radius:8px;background:none;border:1px solid transparent;color:#fff;font-size:14px}
+.rooms button:hover{background:rgba(255,255,255,.07)}
+.rooms button[aria-pressed=true]{color:var(--gold2)}
+.rooms button{position:relative;z-index:1}
+.rpill{position:absolute;z-index:0;border:1px solid var(--gold);border-radius:8px;background:rgba(210,170,75,.1);pointer-events:none}
+.rooms .gbtn{min-height:44px;padding:0 16px;background:var(--gold);color:#131518}
+.rooms .gbtn:hover{background:var(--gold2)}
+.card2{position:absolute;right:max(3vw,16px);top:18px;z-index:2;width:min(300px,40vw);background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:12px;overflow:hidden;opacity:0;transition:opacity .4s;pointer-events:none}
+.card2.on{opacity:1;pointer-events:auto}
+.card2 img{width:100%;height:170px;object-fit:cover;object-position:50% 40%}
+.card2 div{padding:12px 14px;font-size:13px;color:#ddd}
+.card2 b{display:block;font:400 18px/1.2 'Josefin Sans',sans-serif;color:#fff;margin-bottom:4px}
+.wa{position:absolute;right:max(3vw,16px);bottom:max(2vh,14px);z-index:2;opacity:0;transition:opacity .5s}
+#tour.ready .tt,#tour.ready .rooms,#tour.ready .wa{opacity:1}
+.drag{position:absolute;left:50%;top:18px;transform:translateX(-50%);font-size:13px;color:#d0d5de;z-index:1;opacity:0;transition:opacity .5s;white-space:nowrap}
+#tour.ready .drag{opacity:.9}
+
+/* photo tour: Rockhill's renders, full screen, with slow camera moves */
+#ptour{position:fixed;inset:0;z-index:50;background:#0b0c0f;display:none;overflow:hidden}
+#ptour.open{display:block}
+.pimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity,filter;transform-origin:50% 50%}
+.pbg{position:absolute;inset:-60px;background:center/cover no-repeat #0b0c0f;filter:blur(30px) brightness(.42) saturate(1.15);display:none;transition:background-image .6s}
+@media(max-aspect-ratio:6/5){#ptour .pimg{object-fit:contain}.pbg{display:block}}
+#ptour .pimg.fitc{object-fit:contain}
+#ptour.contain .pbg{display:block}
+.pshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(8,10,14,.55),transparent 26%,transparent 70%,rgba(8,10,14,.7))}
+#ptour .tt,#ptour .rooms,#ptour .wa,.pnav,.pcount,.pnote{opacity:0;transition:opacity .5s}
+#ptour.ready .tt,#ptour.ready .rooms,#ptour.ready .wa,#ptour.ready .pnav,#ptour.ready .pcount,#ptour.ready .pnote{opacity:1}
+.pnav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(16,22,38,.45);backdrop-filter:blur(10px);color:#fff;font-size:26px;line-height:1;cursor:pointer;transition:background-color .2s,transform .3s,opacity .5s}
+.pnav:hover{background:rgba(210,170,75,.35)}
+.pnav:active{transform:translateY(-50%) scale(.92)}
+.pnav.prev{left:max(2vw,12px)}.pnav.next{right:max(2vw,12px)}
+.pcount{position:absolute;top:22px;right:max(3vw,16px);z-index:2;font:300 22px/1 'Josefin Sans',sans-serif;color:#fff;letter-spacing:.06em}
+.pcount b{color:var(--gold2);font-weight:400}
+.pprog{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--gold);z-index:3}
+.pnote{position:absolute;left:max(3vw,16px);bottom:max(2vh,14px);z-index:2;font-size:12.5px;color:#b9bcc4;max-width:260px}
+.ptbtn{background:none;border:1px solid rgba(255,255,255,.25)!important}
+@media(max-width:700px){.pnav{top:auto;bottom:150px;transform:none;width:46px;height:46px}.pnav:active{transform:scale(.92)}.pnote{display:none}.pcount{top:auto;bottom:206px;right:14px}}
+
+/* gallery */
+.gchips{display:flex;gap:6px;flex-wrap:wrap;margin:28px 0 16px}
+.gchips button{min-height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line);background:none;color:#cfcbc2;font-size:14px;cursor:pointer;transition:background-color .2s,border-color .2s,color .2s}
+.gchips button[aria-selected=true]{border-color:var(--gold);color:#fff;background:rgba(210,170,75,.14)}
+.gwrap{position:relative}
+.gstrip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+.gstrip figure{flex:none;margin:0;scroll-snap-align:start;cursor:zoom-in;position:relative;border-radius:6px;overflow:hidden;background:#1c1e22}
+.gstrip img{display:block;height:min(44vh,380px);width:auto;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.gstrip figure:hover img{transform:scale(1.04)}
+.gstrip figcaption{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 12px;font-size:14px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff}
+.gstrip figure:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.gnav{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.gnav button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:none;color:#fff;font-size:20px;cursor:pointer}
+.gnav button:hover{border-color:var(--gold)}
+#lb{position:fixed;inset:0;z-index:70;background:rgba(6,7,9,.94);display:none;align-items:center;justify-content:center;padding:56px 70px 70px}
+#lb.open{display:flex}
+#lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#lb p{position:absolute;left:0;right:0;bottom:20px;text-align:center;margin:0;color:#e8e9ec;font-size:15px}
+#lb .x{position:absolute;top:14px;right:14px;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:none;color:#fff;font-size:24px;cursor:pointer}
+#lb .lp,#lb .ln{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(20,22,28,.5);color:#fff;font-size:24px;cursor:pointer}
+#lb .lp{left:12px}#lb .ln{right:12px}
+@media(max-width:700px){#lb{padding:56px 8px 70px}#lb .lp,#lb .ln{top:auto;bottom:12px;transform:none}}
+.card .tour{margin-top:14px;min-height:44px;width:100%}
+
+/* brochure sections */
+.res{background:var(--bg2)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:36px}
+.card{background:#2a2a2d;display:flex;flex-direction:column}
+.card .im{aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:10px}
+.card .im img{max-height:100%;width:auto;object-fit:contain}
+.card .tx{padding:16px 18px 20px;background:var(--card);flex:1}
+.card h3{font-size:30px}
+.card p{margin:6px 0 0;color:var(--mute);font-size:14px}
+.card .c{display:inline-block;margin-top:10px;font-size:13px;border:1px solid var(--line);border-radius:14px;padding:3px 10px;color:#ddd8cf}
+.tb{aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:28px;background:linear-gradient(160deg,#2c2a26,#24252a);border-bottom:1px solid var(--line)}
+.tb p{margin:0;font:300 24px/1.25 'Josefin Sans',sans-serif;color:#f0ebe0}
+.tb .gbtn{align-self:flex-start}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,80px);align-items:center}
+.split img{width:100%;height:auto;border-radius:2px}
+.am{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none}
+.am li{font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:16px;color:#ddd8cf}
+.brands{list-style:none;padding:0;margin:26px 0 0;border-top:1px solid var(--line)}
+.brands li{display:grid;grid-template-columns:9em minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.brands b{font:400 20px/1.2 'Josefin Sans',sans-serif;color:var(--gold2)}
+.brands span{color:#cfcbc2;font-size:15px}
+.cta{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px;align-items:end;border-top:1px solid var(--line)}
+.ghost{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:8px;background:none;color:var(--ink);border:1px solid var(--line);font-weight:500;text-decoration:none}
+.ghost:hover{border-color:var(--gold)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 20px;font-size:15px}
+dt{color:var(--mute)}dd{margin:0}
+footer{padding:28px max(5vw,16px);border-top:1px solid var(--line);color:#8f8c84;font-size:13px}
+
+@media(max-width:1100px){
+ nav{display:none}
+ .bwrap{display:block}
+ .stagewrap .hov{display:none}
+ .pickhead{display:block;padding:28px 16px 6px;text-align:center}
+ .pickhead h2{font-size:30px}.pickhead p{margin:6px auto 0;color:#cfd4dc;font-size:14px;max-width:40ch}
+ .picker{display:flex;gap:20px;justify-content:center;align-items:flex-start;padding:14px 12px 28px;background:linear-gradient(#0b1a44,#131518)}
+ .stagewrap{flex:none;height:min(72vh,760px);aspect-ratio:1000/2600;border-radius:10px}
+ .stage{height:100%}
+ .stage svg{height:100%;width:auto;aspect-ratio:1000/2600}
+ .panel{position:relative;left:auto!important;top:auto!important;width:min(380px,100%)!important;display:block}
+ .panel>*+*{margin-top:12px}
+ .pa{justify-content:space-between}
+ .num{font-size:56px}
+ .types{flex-direction:column}
+ .types button{flex-direction:row;justify-content:space-between;align-items:center;min-height:44px}
+ .pick{width:100%}
+ .ddbtn{width:100%}
+ .pa .ddbtn{flex:1}
+ .panel .gbtn{width:100%}
+ .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){.picker{flex-direction:column;align-items:center}.panel{width:100%!important}}
+@media(max-width:700px){
+ .split,.cta{grid-template-columns:minmax(0,1fr)}
+ .brands li{grid-template-columns:minmax(0,1fr)}
+ .card2{display:none}
+ .tt{top:12px;padding:10px 14px;max-width:calc(100vw - 32px)}.drag{display:none}
+ .wa{bottom:78px;right:12px}
+ .rooms{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:calc(100vw - 24px);left:12px;transform:none}
+ .rooms button,.rooms .gbtn{flex:none}
+}
+@media(max-width:460px){.grid4{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.stage .fl,#flash,.tt,.rooms,.wa{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#top" aria-label="Rockhill Development, back to the top"><b>ROCKHILL</b><span>DEVELOPMENT</span></a>
+  <nav aria-label="Sections"><a href="#residences">Residences</a><a href="#rooftop">Gallery</a><a href="#details">Details</a><a href="#contact">Contact</a></nav>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <h1 class="sr">Rockhill Tower, a new standard of living in Ajman, by Rockhill Development</h1>
+  <div class="bwrap"><img class="banner" id="banner" alt="Rockhill Tower at sunset in Al Alia, Ajman."><div class="hov" aria-hidden="true"><p class="ht">ROCKHILL<br>TOWER</p><p class="hs">A new standard<br>of living in Ajman</p><div class="hb"><img src="img/logo-mark.png" alt=""><b>ROCKHILL</b><i></i><span>DEVELOPMENT</span></div></div></div>
+  <div class="pickhead"><h2>Choose your floor</h2><p>Tap a floor on the tower or use the panel, then step inside a home.</p></div>
+  <div class="picker" id="picker">
+    <div class="stagewrap" id="stagebox">
+      <div class="stage" id="stage">
+        <svg id="svg" viewBox="0 0 3840 2640" preserveAspectRatio="xMidYMid slice" role="group" aria-label="Rockhill Tower at sunset in Al Alia, Ajman. Floors of the tower: use the arrow keys to move between floors, Enter to choose.">
+          <image id="heroImage" x="0" y="0" width="3840" height="2640" preserveAspectRatio="none"></image>
+          <g id="floors"></g>
+        </svg>
+        <div class="hov" aria-hidden="true"><p class="ht">ROCKHILL<br>TOWER</p><p class="hs">A new standard<br>of living in Ajman</p><div class="hb"><img src="img/logo-mark.png" alt=""><b>ROCKHILL</b><i></i><span>DEVELOPMENT</span></div></div>
+      </div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+</section>
+
+<section class="band res" id="residences">
+  <div class="wrap">
+    <div data-reveal><p class="k">Residences</p>
+    <h2>Studios to three bedrooms</h2>
+    <p class="lede" style="margin-top:16px">Four home types across 20 residential floors, with wood floors throughout.</p></div>
+    <div class="grid4" id="cards"></div>
+  </div>
+</section>
+
+<section class="band" id="rooftop">
+  <div class="wrap">
+    <div data-reveal>
+      <p class="k">Gallery</p>
+      <h2>Life at Rockhill Tower</h2>
+      <p class="lede" style="margin-top:16px">A rooftop pool and padel court, a gym, spa and cinema, and homes finished in marble and walnut. Every image here is Rockhill's own render.</p>
+      <ul class="am" id="am"></ul>
+    </div>
+    <div class="gchips" role="tablist" aria-label="Gallery" id="gchips"></div>
+    <div class="gwrap"><div class="gstrip" id="gstrip"></div>
+    <div class="gnav"><button id="gPrev" aria-label="Scroll gallery back">‹</button><button id="gNext" aria-label="Scroll gallery forward">›</button></div></div>
+  </div>
+</section>
+
+<section class="band res" id="details">
+  <div class="wrap split">
+    <div data-reveal>
+      <p class="k">Finishes</p>
+      <h2>Quality is in the details</h2>
+      <p class="lede" style="margin-top:16px">Fittings and appliances from names buyers already know.</p>
+      <ul class="brands">
+        <li><b>Scavolini</b><span>Italian kitchen cabinetry</span></li>
+        <li><b>Miele</b><span>Kitchen appliances</span></li>
+        <li><b>Grohe</b><span>Taps and fittings</span></li>
+        <li><b>Daikin</b><span>Climate control</span></li>
+        <li><b>KNX</b><span>Smart-home controls</span></li>
+      </ul>
+    </div>
+    <img data-kit alt="Rockhill kitchen with marble surfaces, walnut shelving and labelled fittings" data-reveal>
+  </div>
+</section>
+
+<section class="band" id="contact">
+  <div class="wrap cta" data-reveal>
+    <div>
+      <p class="k">Visit or call</p>
+      <h2>Choose your home with the people who build it</h2>
+      <p class="lede" style="margin-top:16px">Rockhill designs, builds and manages its towers in-house, so one team answers for your home from the first payment to the handover.</p>
+      <div class="row"><a class="gbtn" id="waMain" href="#" target="_blank" rel="noopener">Ask on WhatsApp</a><a class="ghost" href="https://rockhilldev.com/contact-us" target="_blank" rel="noopener">Contact page</a></div>
+    </div>
+    <dl>
+      <dt>Location</dt><dd>Al Alia, Ajman · about 39 min to Downtown Dubai</dd>
+      <dt>Ownership</dt><dd>Freehold, all nationalities</dd>
+      <dt>Homes</dt><dd>154 studios · 129 one-bed · 78 two-bed · 55 three-bed</dd>
+      <dt>WhatsApp</dt><dd>+971 56 434 3002</dd>
+    </dl>
+  </div>
+</section>
+</main>
+<footer>Concept site prepared for Rockhill Development. Images are artist's impressions; renders and floor plans © Rockhill Development, and the 3D homes are built from those plans. Unit numbers, the mix of homes on each floor and availability are sample data; the three-bed count is the 416 total minus the other types.</footer>
+
+<div id="flash"></div>
+<div id="tour" role="dialog" aria-modal="true" aria-labelledby="tH">
+  <canvas id="c3" aria-label="3D model of the apartment. Drag to turn, scroll to zoom."></canvas>
+  <div class="tt"><p id="tK"></p><h2 id="tH">Apartment</h2><div class="sub" id="tS"></div></div>
+  <div class="drag">Drag to turn · scroll to zoom</div>
+  <div class="card2" id="fin"><img data-kit alt="Kitchen finishes"><div><b>Kitchen finishes</b>Scavolini cabinetry, Miele appliances, Grohe fittings, Daikin climate, KNX smart home</div></div>
+  <a class="gbtn wa" id="tWa" href="#" target="_blank" rel="noopener">Reserve on WhatsApp</a>
+  <div class="rooms" id="rooms" role="toolbar" aria-label="Rooms"></div>
+</div>
+<div id="ptour" role="dialog" aria-modal="true" aria-labelledby="pH">
+  <div class="pbg" id="pBg" aria-hidden="true"></div>
+  <img class="pimg" id="pA" alt=""><img class="pimg" id="pB" alt="">
+  <div class="pshade"></div>
+  <div class="tt"><p id="pK"></p><h2 id="pH">Home</h2><div class="sub" id="pS"></div></div>
+  <div class="pcount" id="pCount" aria-hidden="true"></div>
+  <button class="pnav prev" id="pPrev" aria-label="Previous room">‹</button>
+  <button class="pnav next" id="pNext" aria-label="Next room">›</button>
+  <a class="gbtn wa" id="pWa" href="#" target="_blank" rel="noopener">Reserve on WhatsApp</a>
+  <p class="pnote">Artist's impression: Rockhill's renders, matched to this home type.</p>
+  <div class="rooms" id="prooms" role="toolbar" aria-label="Rooms"></div>
+  <div class="pprog" id="pProg"></div>
+</div>
+<div id="lb" role="dialog" aria-modal="true" aria-label="Image viewer"><img id="lbImg" alt=""><p id="lbCap"></p><button class="lp" id="lbP" aria-label="Previous image">‹</button><button class="ln" id="lbN" aria-label="Next image">›</button><button class="x" id="lbX" aria-label="Close">×</button></div>
+<div class="tip" id="tip"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/motion@11.11.17/dist/motion.js"></script>
+<script>
+{
+const THREE_URL='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+const KIT='img/kitchen.jpg', HERO='img/hero-sunset.jpg';
+const IMG={S:'img/plan-studio.jpg',1:'img/plan-1bed.jpg',2:'img/plan-2bed.jpg'};
+document.querySelectorAll('img[data-kit]').forEach(i=>i.src=KIT);
+document.getElementById('heroImage').setAttribute('href',HERO);document.getElementById('banner').src=HERO;
+const WA='971564343002';
+const TYPES={
+  S:{n:'Studio',count:154,area:353.49,line:'Smart, functional living for individuals and investors'},
+  1:{n:'1 Bed',count:129,area:689.21,line:'More room, more privacy, more comfort'},
+  2:{n:'2 Bed',count:78,area:948.19,line:'Designed for couples and families who need more space'},
+  3:{n:'3 Bed',count:55,area:null,line:'The largest homes in the tower'}
+};
+/* 3D homes traced from Rockhill's plans: walls [x0,y0,x1,y1,kind] in plan pixels. kind: w wall, p parapet, g glass, f wardrobe */
+const PLANS={
+ S:{w:1000,h:1239,mpp:.00625,walls:[[385,15,435,45,'w'],[435,22,730,42,'g'],[730,15,960,45,'w'],[945,15,975,1200,'w'],[385,15,415,250,'w'],[350,245,415,720,'w'],[350,720,415,870,'w'],[385,1000,415,1230,'w'],[10,720,385,755,'w'],[10,720,40,1050,'w'],[10,1020,385,1050,'w'],[385,1170,800,1230,'w'],[940,1170,975,1230,'w'],[415,468,745,545,'f']],
+   rooms:[['Living',600,720,0],['Bed',600,260,0],['Kitchen',600,1110,3.14],['Bathroom',190,885,1.2]]},
+ 1:{w:1000,h:948,mpp:.00927,walls:[[5,15,40,935,'w'],[5,900,300,935,'w'],[395,905,830,940,'w'],[800,480,830,940,'w'],[945,110,975,500,'w'],[555,470,975,500,'w'],[552,570,570,655,'w'],[555,650,830,672,'w'],[395,700,425,905,'w'],[412,15,455,560,'w'],[38,150,190,180,'w'],[190,155,412,175,'g'],[455,110,545,150,'w'],[545,118,815,142,'g'],[815,110,960,150,'w'],[38,15,412,38,'p'],[455,15,960,38,'p'],[955,10,990,150,'w']],
+   rooms:[['Living',220,330,0],['Dining',220,720,0],['Kitchen',610,790,3.14],['Bedroom',700,300,0],['Bathroom',690,575,0],['Balcony',230,95,0]]},
+ 2:{w:1000,h:868,mpp:.013,walls:[[160,15,470,45,'w'],[160,15,195,185,'w'],[410,15,440,185,'w'],[410,172,990,200,'w'],[120,175,240,200,'w'],[8,175,40,320,'w'],[10,295,270,320,'w'],[265,300,290,760,'w'],[430,310,450,440,'w'],[270,425,390,445,'w'],[270,430,480,450,'w'],[565,450,590,800,'w'],[660,430,970,450,'w'],[960,180,990,440,'w'],[955,440,980,670,'w'],[835,660,980,680,'w'],[840,665,860,840,'w'],[840,830,980,860,'w'],[955,665,985,860,'w'],[265,735,400,760,'w'],[400,742,560,756,'g'],[600,742,790,756,'g'],[790,735,840,760,'w'],[370,820,560,835,'p'],[600,820,835,835,'p'],[550,740,580,835,'w'],[370,740,400,835,'w'],[895,200,910,420,'g'],[975,190,988,420,'p']],
+   rooms:[['Living',790,300,0],['Dining',570,310,0],['Kitchen',300,110,3.14],['Bedroom',390,590,0],['Master bedroom',760,570,0],['Bathroom',900,760,0],['Balcony',940,300,1.57]]}
+};
+const AMEN=['Rooftop pool','Padel court','Jogging track','Gym','Sauna & steam','Jacuzzi','Private cinema','Library','Games room','Golf simulator','Mosque','Smart-home controls'];
+/* floor geometry in the 4K sunset render (3840 × 2640): each band is a real row of windows, drawn in the tower's own perspective.
+   The left face runs up toward the corner, the front face is almost level: both meet a horizon at y=H. */
+const IW=3840, IH=2640;
+const G={H:2738,VL:-1920,VF:60000,XL:1470,XC:1690,XR:2278,A:66.44,B0:358.12,XM:1750};
+const FIRST=7, TOP=26, LOWEST=0;
+function edge(k){const y0=G.B0+G.A*k,y=y0-(G.H-y0)/(G.VF-G.XC)*(G.XM-G.XC),sl=(G.H-y)/(G.VL-G.XC),sf=(G.H-y)/(G.VF-G.XC);
+  return [[G.XL,y+sl*(G.XL-G.XC)],[G.XC,y],[G.XR,y+sf*(G.XR-G.XC)]]}
+const polyAt=k=>{const a=edge(k+.04),b=edge(k+.96);return a.concat(b.reverse()).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')};
+const kOf=l=>TOP-l;
+const BAR={x0:2350,x1:3790,y0:1080};   // floor bar sits in the sky to the right of the tower
+const CROP=[1360,40,1000,2600];        // tower close-up for picking on phones and tablets
+const MIX='8643,8643,8643,8643,8643,8643,7743,8742,8643,7743,8742,8643,7743,8742,8643,7743,8732,7643,8732,7643'.split(',');
+function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+const KEYS=['S','1','2','3'];
+const UNITS={};
+for(let l=FIRST;l<=TOP;l++){
+  const m=MIX[l-FIRST],pos=[];
+  KEYS.forEach((t,j)=>{const n=+m[j];for(let i=0;i<n;i++)pos.push({t,p:(i+.5)/n+j*.001})});
+  pos.sort((a,b)=>a.p-b.p);
+  const r=rnd(l*7919),sold=.3+(l-FIRST)/(TOP-FIRST)*.25;
+  UNITS[l]=pos.map((x,i)=>({no:String(l*100+i+1),t:x.t,free:r()>sold}));
+}
+const $=id=>document.getElementById(id);
+const sysReduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let forceMo=false;try{forceMo=localStorage.getItem('rh-motion')==='on'}catch(e){}
+const reduce=sysReduce&&!forceMo;
+/* devices with animations turned off get a one-click switch: the flight and camera moves are the point of this site */
+const MTOGGLE=()=>sysReduce?`<button class="mtoggle" id="mToggle" aria-pressed="${forceMo}">${forceMo?'Animations on · turn off':'Animations are off on this device · <b>Turn on</b>'}</button>`:'';
+const narrow=()=>innerWidth<=1100;
+/* ---------- motion (Framer Motion's vanilla engine) ---------- */
+const MO=window.Motion&&!reduce?window.Motion:null;
+if(MO)document.documentElement.classList.add('m');
+const EZ=[.22,1,.36,1], SPRING={type:'spring',stiffness:210,damping:26,mass:.9};
+function springAttr(el,key,to){
+  if(!MO){el.setAttribute(key,to);return}
+  el._a=el._a||{};const from=parseFloat(el.getAttribute(key))||0;
+  if(el._a[key])el._a[key].stop();
+  el._a[key]=MO.animate(from,to,{...SPRING,onUpdate:v=>el.setAttribute(key,v)});
+}
+function fadeTo(el,v,d=.28){if(!MO){el.style.opacity=v;return}if(el._f)el._f.stop();el._f=MO.animate(el,{opacity:v},{duration:d,ease:EZ})}
+/* odometer: value glides through fractions (22 → 22.4 → 22.8 → 23), digits roll, tens carry smoothly */
+const ODO={};
+function odoBuild(el){if(el.firstChild)return;const strip='<span class="ods">'+[0,1,2,3,4,5,6,7,8,9,0].map(d=>`<i>${d}</i>`).join('')+'</span>';el.innerHTML=`<span class="odc">${strip}</span><span class="odc">${strip}</span>`}
+function odoDraw(el,v,lead){
+  const [t,o]=el.querySelectorAll('.ods'),ones=((v%10)+10)%10,carry=ones>9?ones-9:0,tens=((Math.floor(v/10)+carry)%10+10)%10;
+  o.style.transform=`translateY(${-ones*1.1}em)`;t.style.transform=`translateY(${-tens*1.1}em)`;
+  el.classList.toggle('one',!lead&&v<9.5);
+}
+function odoRun(key,el,to,lead){
+  if(!el)return;odoBuild(el);const st=ODO[key]||(ODO[key]={v:to});
+  if(st.a)st.a.stop();
+  if(!MO||st.v===to){st.v=to;odoDraw(el,to,lead);return}
+  odoDraw(el,st.v,lead);
+  st.a=MO.animate(st.v,to,{duration:Math.min(1.4,.85+Math.abs(to-st.v)*.03),ease:[.45,.05,.2,1],onUpdate:v=>{st.v=v;odoDraw(el,v,lead)},onComplete:()=>{st.v=to;odoDraw(el,to,lead)}});
+}
+function movePill(box,target,cls,animate){
+  if(!box||!target)return;
+  let p=box.querySelector('.'+cls);if(!p){p=document.createElement('span');p.className=cls;p.setAttribute('aria-hidden','true');box.prepend(p)}
+  const to={left:target.offsetLeft+'px',top:target.offsetTop+'px',width:target.offsetWidth+'px',height:target.offsetHeight+'px'};
+  if(MO&&animate&&p.style.width){if(p._a)p._a.stop();p._a=MO.animate(p,to,{type:'spring',stiffness:380,damping:32})}else Object.assign(p.style,to);
+}
+const wa=t=>`https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
+$('waMain').href=wa('Hello, I would like to know more about Rockhill Tower.');
+const svg=$('svg'),floorsG=$('floors'),panel=$('panel'),tip=$('tip'),stage=$('stage'),sbox=$('stagebox');
+let sel=null,selType=null;
+
+/* ---------- hero layout: the whole picture on desktop, a tower close-up for picking on smaller screens ---------- */
+function layoutStage(){
+  const W=document.documentElement.clientWidth;
+  const hdr=document.querySelector('header');
+  if(narrow()){svg.setAttribute('viewBox',CROP.join(' '));panel.style.left=panel.style.top=panel.style.width=panel.style.zoom=hdr.style.zoom='';return}
+  svg.setAttribute('viewBox',`0 0 ${IW} ${IH}`);
+  const z=Math.min(2,Math.max(1,W/1920));          // big screens: the bar grows with the picture
+  panel.style.zoom=hdr.style.zoom=z>1?z:'';
+  const s=W/IW, x0=BAR.x0*s, x1=Math.min(W-16,BAR.x1*s), w=Math.max(Math.min(720*z,x1-x0),Math.min(600*z,W-16-x0));
+  panel.style.left=Math.round(Math.min(x0,W-16-w)/z)+'px';panel.style.top=Math.round(BAR.y0*s/z)+'px';panel.style.width=Math.round(w/z)+'px';
+}
+layoutStage();addEventListener('resize',layoutStage);
+
+/* ---------- they pick the floor ---------- */
+let h='';
+for(let l=LOWEST;l<=TOP;l++){const r=l>=FIRST;h+=`<polygon data-l="${l}" class="fl${r?'':' p'}" points="${polyAt(kOf(l))}" ${r?`tabindex="${l===FIRST?0:-1}" role="button" aria-label="Level ${l}"`:''}></polygon>`}
+floorsG.innerHTML=h+`<polygon id="hl" class="glide" points="0,0" opacity="0"></polygon><polygon id="sl" class="glide" points="0,0" opacity="0"></polygon>`;
+const HL=$('hl'),SL=$('sl');
+const rects={};svg.querySelectorAll('polygon[data-l]').forEach(r=>rects[r.dataset.l]=r);
+const free=l=>UNITS[l].filter(u=>u.free);
+function glide(el,l){
+  if(!l){if(el._on){el._on=false;el._l=null;fadeTo(el,0)}return}
+  if(el._on&&el._l===l)return;el._l=l;
+  const to=kOf(l);if(el._g)el._g.stop();
+  if(!el._on){el._k=to;el.setAttribute('points',polyAt(to));el._on=true;fadeTo(el,1,.22)}
+  else if(MO){el._g=MO.animate(el._k,to,{...SPRING,onUpdate:v=>{el._k=v;el.setAttribute('points',polyAt(v))}})}
+  else{el._k=to;el.setAttribute('points',polyAt(to))}
+}
+function paint(hov){HL.classList.toggle('pk',!!hov&&hov<FIRST);glide(HL,hov&&hov!==sel?hov:null);glide(SL,sel)}
+function rove(l){for(let i=FIRST;i<=TOP;i++)rects[i].tabIndex=i===l?0:-1}
+svg.addEventListener('pointermove',e=>{
+  const r=e.target.closest('polygon[data-l]');if(!r){tip.classList.remove('show');paint(null);return}
+  const l=+r.dataset.l;paint(l);
+  if(e.pointerType==='mouse'){tip.classList.add('show');tip.style.left=e.clientX+'px';tip.style.top=e.clientY+'px';
+    tip.innerHTML=l>=FIRST?`<b>Level ${l}</b>${free(l).length} of ${UNITS[l].length} homes available`:`<b>Podium</b>Parking levels`}
+});
+svg.addEventListener('pointerleave',()=>{tip.classList.remove('show');paint(null)});
+svg.addEventListener('click',e=>{const r=e.target.closest('polygon[data-l]');if(r&&+r.dataset.l>=FIRST)select(+r.dataset.l)});
+svg.addEventListener('keydown',e=>{
+  const r=e.target.closest('polygon[data-l]');if(!r)return;const l=+r.dataset.l;
+  const go=n=>{e.preventDefault();e.stopPropagation();n=Math.max(FIRST,Math.min(TOP,n));select(n,true);rects[n].focus({preventScroll:true})};
+  if(e.key==='ArrowUp'||e.key==='ArrowRight')go(l+1);
+  else if(e.key==='ArrowDown'||e.key==='ArrowLeft')go(l-1);
+  else if(e.key==='Home')go(FIRST);else if(e.key==='End')go(TOP);
+  else if(e.key==='Enter'||e.key===' '){e.preventDefault();select(l)}
+});
+
+const FACTS=`<div class="facts"><div><b>G+26</b><span>levels</span></div><div><b>416</b><span>residences</span></div><div><b>AED 280,000</b><span>starting price</span></div><div><b>Q2 2029</b><span>handover</span></div></div>`;
+const CHEV='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>';
+const pad=l=>String(l).padStart(2,'0');
+const ddBtnHTML=()=>`<button class="ddbtn" id="ddBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="ddList" ${sel?`aria-label="Floor ${sel}. Choose a floor"`:''}>${sel?`<b>FLOOR <span class="odo" id="odoF"></span></b>`:'Choose a floor'}${CHEV}</button>`;
+function panelIntro(){
+  panel.innerHTML=`<div><h2 class="ptitle">Choose your floor</h2><p class="hint">Move over the tower and click a floor, or pick one here.</p></div>
+   <span></span>${ddBtnHTML()}${FACTS}${MTOGGLE()}`;
+  bindDD();
+}
+let loadErr=false;
+function panelFloor(){
+  const fr=free(sel);
+  const byType=KEYS.map(k=>({k,all:UNITS[sel].filter(u=>u.t===k).length,av:fr.filter(u=>u.t===k).length})).filter(x=>x.all);
+  if(!selType||!byType.find(x=>x.k===selType&&x.av))selType=(byType.find(x=>x.av&&x.k!=='3')||{}).k||null;
+  panel.innerHTML=`<div class="pa">${ddBtnHTML()}<div class="steps"><button data-step="1" aria-label="Floor above">▲</button><button data-step="-1" aria-label="Floor below">▼</button></div></div>
+   <div class="types" role="group" aria-label="Home type">${byType.map(x=>`<button data-t="${x.k}" aria-pressed="${x.k===selType}" ${x.av&&x.k!=='3'?'':'disabled'}>${TYPES[x.k].n}<span>${x.k==='3'?'plan on request':x.av+' of '+x.all+' free'}</span></button>`).join('')}</div>
+   <button class="gbtn" id="enter" ${selType?'':'disabled'}>${selType?`Enter floor ${sel}`:'No homes free'}</button>
+   <p class="av"><b><span class="odo" id="odoA" aria-hidden="true"></span><span class="sr">${fr.length}</span> homes available</b> of ${UNITS[sel].length} on level ${sel}. Availability is sample data.</p>${MTOGGLE()}
+   ${loadErr?'<p class="err">The 3D view could not load. Check your connection and try again.</p>':''}`;
+  bindDD();
+  const tb=panel.querySelector('.types');movePill(tb,tb.querySelector('[aria-pressed=true]'),'tpill',false);
+  odoRun('F',$('odoF'),sel,true);odoRun('A',$('odoA'),fr.length,false);
+  if(MO&&animIn)MO.animate(panel.querySelectorAll('.types button,.tpill,#enter,.av'),{opacity:[0,1],transform:['translateY(8px)','translateY(0px)']},{duration:.45,ease:EZ,delay:MO.stagger(.045)});
+  animIn=false;
+}
+let animIn=false;
+function select(l,quiet){
+  const nl=Math.max(FIRST,Math.min(TOP,l));if(nl!==sel){selType=null;animIn=true}sel=nl;rove(nl);panelFloor();paint(null);
+  ensure3D().catch(()=>{});
+  if(narrow()&&!quiet)panel.scrollIntoView({behavior:reduce?'auto':'smooth',block:'nearest'});
+}
+panel.addEventListener('click',e=>{
+  if(e.target.closest('#mToggle')){try{localStorage.setItem('rh-motion',forceMo?'off':'on')}catch(err){}location.reload();return}
+  const s=e.target.closest('[data-step]'),t=e.target.closest('[data-t]');
+  if(s){select(sel+ +s.dataset.step,true)}else if(t&&!t.disabled){selType=t.dataset.t;panel.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-pressed',b===t));movePill(t.parentElement,t,'tpill',true)}else if(e.target.id==='enter')flyIn();
+});
+addEventListener('keydown',e=>{
+  if(P.open||lbOpen())return;
+  if(tourOpen){if(e.key==='Escape')flyOut();return}
+  if(e.target.closest&&e.target.closest('svg,select,input,.dd,#ddBtn'))return;
+  if(sel&&(e.key==='ArrowUp'||e.key==='ArrowDown')&&scrollY<innerHeight*.6){e.preventDefault();select(sel+(e.key==='ArrowUp'?1:-1),true)}
+});
+
+/* ---------- 3D loads only when someone wants to step inside ---------- */
+let p3d=null;
+function ensure3D(){
+  if(!p3d)p3d=new Promise((res,rej)=>{const s=document.createElement('script');s.src=THREE_URL;s.onload=()=>{try{init3D();res()}catch(err){rej(err)}};s.onerror=()=>{p3d=null;rej(new Error('three'))};document.head.appendChild(s)});
+  return p3d;
+}
+
+/* ---------- the flight: zoom into the real picture ---------- */
+const flash=$('flash');
+let tourOpen=false;
+function stageZoom(target,dur){
+  return new Promise(res=>{
+    stage.style.transition=reduce?'none':`transform ${dur}ms cubic-bezier(.55,0,.25,1), filter ${dur}ms ease-in`;
+    stage.style.transform=target.t;stage.style.filter=target.f||'none';
+    setTimeout(res,reduce?0:dur);
+  });
+}
+function flyTransform(){
+  const r=rects[sel].getBoundingClientRect(), box=sbox.getBoundingClientRect(), s0=stage.getBoundingClientRect();
+  const k=Math.min(9,(innerWidth*1.15)/r.width);
+  const cx=r.left+r.width/2-s0.left, cy=r.top+r.height/2-s0.top;
+  const tx=(box.left+box.width/2)-s0.left-cx*k, ty=(box.top+box.height/2)-s0.top-cy*k;
+  return `translate(${tx}px,${ty}px) scale(${k})`;
+}
+async function flyIn(){
+  if(!sel||!selType||tourOpen)return;
+  tourOpen=true;tip.classList.remove('show');loadErr=false;
+  const first=preload(TOUR[selType][0].img);
+  if(MO){await MO.animate(SL,{opacity:[1,.35,1,.5,1]},{duration:.6,ease:'easeInOut'})}
+  document.body.classList.add('flying');
+  const sb=sbox.getBoundingClientRect();
+  const want=narrow()?sb.top+(sb.height-innerHeight)/2:Math.min($('top').getBoundingClientRect().top,sb.top);
+  if(Math.abs(want)>4)scrollTo({top:scrollY+want,behavior:'instant'});
+  try{await Promise.all([stageZoom({t:flyTransform(),f:'blur(1.5px) brightness(1.2)'},1500),first])}
+  catch(err){loadErr=true;tourOpen=false;document.body.classList.remove('flying');await stageZoom({t:'none',f:'none'},600);panelFloor();return}
+  flash.style.opacity=1;await new Promise(r=>setTimeout(r,reduce?0:420));
+  openPhoto(selType,true);
+  flash.style.opacity=0;
+}
+async function flyOut(){
+  if(!tourOpen)return;
+  if(P.open){await closePhoto(true)}
+  else{if(!T3)return;await tourExit();
+    flash.style.opacity=1;await new Promise(r=>setTimeout(r,reduce?0:380));
+    $('tour').classList.remove('open','ready')}
+  document.body.style.overflow='';
+  flash.style.opacity=0;
+  await stageZoom({t:'none',f:'none'},1300);
+  document.body.classList.remove('flying');tourOpen=false;panelFloor();const b=$('enter');b&&b.focus({preventScroll:true});
+}
+
+/* ---------- room by room, in 3D built from the plan ---------- */
+let T3=null, openTour, tourExit;
+function init3D(){
+const canvas=$('c3');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x2a2a2d);
+const camera=new THREE.PerspectiveCamera(28,1,.05,300);
+scene.add(new THREE.HemisphereLight(0xfff6ea,0x4a4038,.6));
+const sun=new THREE.DirectionalLight(0xfff0dc,.85);sun.position.set(-5,10,4);scene.add(sun);
+const WH=2.25;
+const mats={
+  w:new THREE.MeshStandardMaterial({color:0xf3efe8,roughness:.9}),
+  p:new THREE.MeshStandardMaterial({color:0xece7de,roughness:.9}),
+  g:new THREE.MeshStandardMaterial({color:0xbfd6ea,roughness:.05,metalness:.2,transparent:true,opacity:.22,depthWrite:false}),
+  f:new THREE.MeshStandardMaterial({color:0x8a6a4e,roughness:.7})
+};
+const hOf={w:WH,p:.95,g:WH,f:1.6};
+let home=null,cur=null;const texCache={};
+function loadTex(k){
+  if(texCache[k])return texCache[k];
+  const t=new THREE.TextureLoader().load(IMG[k]);t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  return texCache[k]=t;
+}
+function buildHome(k){
+  if(home){scene.remove(home);home.traverse(o=>{if(o.geometry)o.geometry.dispose()})}
+  const P=PLANS[k],W=P.w*P.mpp,D=P.h*P.mpp;
+  home=new THREE.Group();
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshBasicMaterial({map:loadTex(k)}));
+  floor.rotation.x=-Math.PI/2;home.add(floor);
+  home.userData.walls=[];
+  for(const [x0,y0,x1,y1,kind] of P.walls){
+    const w=(x1-x0)*P.mpp,d=(y1-y0)*P.mpp,hh=hOf[kind];
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,hh,d),mats[kind]);
+    m.position.set(((x0+x1)/2-P.w/2)*P.mpp,hh/2,((y0+y1)/2-P.h/2)*P.mpp);
+    m.userData.h=hh;home.add(m);home.userData.walls.push(m);
+  }
+  setWalls(0);scene.add(home);cur={k,P,W,D};
+}
+function setWalls(f){if(!home)return;for(const m of home.userData.walls){const s=Math.max(.001,f);m.scale.y=s;m.position.y=m.userData.h*s/2}}
+const roomPt=(P,r)=>new THREE.Vector3((r[1]-P.w/2)*P.mpp,.4,(r[2]-P.h/2)*P.mpp);
+const rig={t:new THREE.Vector3(),yaw:0,pitch:1.5,dist:10};
+let anim=null,wallAnim=null,userYaw=0,userZoom=1;
+function topView(){const fit=Math.max(cur.D,cur.W/camera.aspect)/2/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return{t:new THREE.Vector3(),yaw:0,pitch:1.5707,dist:fit*1.04}}
+function roomView(i){const r=cur.P.rooms[i],span=Math.max(cur.W,cur.D);return{t:roomPt(cur.P,r),yaw:r[3],pitch:1.02,dist:Math.max(10.5,span*.95)*(camera.aspect<1?1.3:1)}}
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function moveTo(v,dur){return new Promise(res=>{let dy=v.yaw-rig.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));
+  anim={f:{t:rig.t.clone(),yaw:rig.yaw,pitch:rig.pitch,dist:rig.dist},to:{t:v.t.clone(),yaw:rig.yaw+dy,pitch:v.pitch,dist:v.dist},t0:performance.now(),dur:reduce?1:dur,res}})}
+function wallsTo(a,b,dur){return new Promise(res=>{wallAnim={a,b,t0:performance.now(),dur:reduce?1:dur,res}})}
+function place(){
+  const yaw=rig.yaw+userYaw,d=rig.dist*userZoom,cp=Math.cos(rig.pitch),sp=Math.sin(rig.pitch);
+  camera.position.set(rig.t.x+d*cp*Math.sin(yaw),rig.t.y+d*sp,rig.t.z+d*cp*Math.cos(yaw));
+  camera.up.set(0,1,0);if(rig.pitch>1.56)camera.up.set(-Math.sin(yaw),0,-Math.cos(yaw));
+  camera.lookAt(rig.t);
+}
+const roomsEl=$('rooms'),fin=$('fin');
+async function goRoom(i){
+  userYaw=0;userZoom=1;
+  roomsEl.querySelectorAll('[data-r]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.r===i));
+  movePill(roomsEl,roomsEl.querySelector(`[data-r="${i}"]`),'rpill',true);
+  fin.classList.toggle('on',cur.P.rooms[i][0]==='Kitchen');
+  await moveTo(roomView(i),1700);
+}
+openTour=function(){
+  const T=TYPES[selType],unit=free(sel).find(u=>u.t===selType);
+  buildHome(selType);
+  $('tK').textContent=`Level ${sel} · Unit ${unit.no}`;$('tH').textContent=T.n;
+  $('tS').textContent=`${T.area.toLocaleString('en')} sq ft · ${T.line}`;
+  $('tWa').href=wa(`Hello, I am interested in unit ${unit.no} (${T.n}, level ${sel}) at Rockhill Tower.`);
+  roomsEl.innerHTML=cur.P.rooms.map((r,i)=>`<button data-r="${i}" aria-pressed="false">${r[0]}</button>`).join('')+'<button class="gbtn" id="back">Back to the tower</button>';
+  fin.classList.remove('on');
+  $('tour').classList.add('open');document.body.style.overflow='hidden';resize();
+  Object.assign(rig,topView());userYaw=0;userZoom=1;place();
+  (async()=>{
+    await new Promise(r=>setTimeout(r,reduce?0:350));
+    wallsTo(0,1,1400);await moveTo(roomView(0),2200);
+    $('tour').classList.add('ready');
+    roomsEl.querySelector('[data-r="0"]').setAttribute('aria-pressed','true');
+    movePill(roomsEl,roomsEl.querySelector('[data-r="0"]'),'rpill',false);
+    if(MO)MO.animate(roomsEl.querySelectorAll('button'),{opacity:[0,1],transform:['translateY(10px)','translateY(0px)']},{duration:.45,ease:EZ,delay:MO.stagger(.05)});
+    $('back').focus({preventScroll:true});
+  })();
+};
+tourExit=async function(){
+  $('tour').classList.remove('ready');fin.classList.remove('on');userYaw=0;userZoom=1;
+  wallsTo(1,0,1100);await moveTo(topView(),1400);
+};
+roomsEl.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b)goRoom(+b.dataset.r);else if(e.target.id==='back')flyOut()});
+const ptr=new Map();let pd=null;
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ptr.size===2){const [a,b]=[...ptr.values()];pd={d:Math.hypot(a.x-b.x,a.y-b.y),z:userZoom}}});
+canvas.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId)||anim)return;const p=ptr.get(e.pointerId);const dx=e.clientX-p.x;p.x=e.clientX;p.y=e.clientY;
+  if(ptr.size===2&&pd){const [a,b]=[...ptr.values()];userZoom=Math.max(.45,Math.min(1.8,pd.z*pd.d/Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))))}else userYaw-=dx*.006});
+const up=e=>{ptr.delete(e.pointerId);if(ptr.size<2)pd=null};
+canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+canvas.addEventListener('wheel',e=>{e.preventDefault();if(!anim)userZoom=Math.max(.45,Math.min(1.8,userZoom*Math.exp(e.deltaY*.001)))},{passive:false});
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<700?40:28;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);
+function loop(now){
+  if($('tour').classList.contains('open')){
+    if(anim){const k=Math.min(1,(now-anim.t0)/anim.dur),e=ease(k);
+      rig.t.lerpVectors(anim.f.t,anim.to.t,e);for(const p of ['yaw','pitch','dist'])rig[p]=anim.f[p]+(anim.to[p]-anim.f[p])*e;
+      if(k>=1){const r=anim.res;anim=null;r()}}
+    if(wallAnim){const k=Math.min(1,(now-wallAnim.t0)/wallAnim.dur);setWalls(wallAnim.a+(wallAnim.b-wallAnim.a)*ease(k));if(k>=1){const r=wallAnim.res;wallAnim=null;r()}}
+    place();renderer.render(scene,camera);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+T3=true;
+}
+
+/* ---------- floor dropdown (listbox) ---------- */
+const CHECK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+const LAYERS='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>';
+const dd=document.createElement('div');
+dd.className='dd';dd.id='ddList';dd.setAttribute('role','listbox');dd.setAttribute('aria-label','Floors');dd.tabIndex=-1;dd.hidden=true;
+dd.innerHTML='<div class="ddscroll" id="ddScroll"></div><button class="ddfoot" id="ddFoot" tabindex="-1"></button>';
+document.body.appendChild(dd);
+const ddScroll=$('ddScroll'),ddFoot=$('ddFoot');
+let ddAct=null,typed='',typedT=0;
+function typesOn(l){const fr=free(l);return KEYS.filter(k=>k!=='3'&&fr.some(u=>u.t===k)).map(k=>TYPES[k].n)}
+function ddRender(){
+  let h='';for(let l=FIRST;l<=TOP;l++)h+=`<div class="opt" role="option" id="opt${l}" data-l="${l}" aria-selected="${l===sel}">FLOOR ${pad(l)}${CHECK}</div>`;
+  ddScroll.innerHTML=h;
+}
+function ddPlace(){
+  const b=$('ddBtn');if(!b)return;const r=b.getBoundingClientRect(),w=Math.max(r.width,310);
+  const below=innerHeight-r.bottom-12,above=r.top-12,up=below<260&&above>below,room=Math.max(200,Math.min(560,up?above:below));
+  dd.classList.toggle('up',up);
+  dd.style.width=w+'px';dd.style.left=Math.min(Math.max(8,r.left),innerWidth-w-8)+'px';
+  if(up){dd.style.top='';dd.style.bottom=(innerHeight-r.top+6)+'px'}else{dd.style.bottom='';dd.style.top=(r.bottom+6)+'px'}
+  ddScroll.style.maxHeight=Math.max(120,room-ddFoot.offsetHeight-30)+'px';
+}
+function ddSetAct(l,scroll){
+  ddAct=l;ddScroll.querySelectorAll('.act').forEach(o=>o.classList.remove('act'));
+  const o=$('opt'+l);o.classList.add('act');dd.setAttribute('aria-activedescendant','opt'+l);
+  if(scroll)o.scrollIntoView({block:'nearest'});
+  const t=typesOn(l);ddFoot.innerHTML=`${LAYERS}<span>${t.length?t.join(' + '):'No homes free'}<small>${free(l).length} homes free on this floor</small></span>${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>'}`;
+  ddFoot.setAttribute('aria-label',`Choose floor ${l}: ${t.join(', ')}`);
+  paint(l);
+}
+function ddOpen(){
+  if(dd._closing){dd._a&&dd._a.stop();dd._closing=false}
+  ddRender();dd.hidden=false;
+  const start=sel||Math.round((FIRST+TOP)/2);ddSetAct(start,false);ddPlace();
+  const o=$('opt'+start);ddScroll.scrollTop=o.offsetTop-ddScroll.clientHeight/2+o.offsetHeight/2;
+  $('ddBtn').setAttribute('aria-expanded','true');dd.focus({preventScroll:true});
+  if(MO){
+    if(dd._a)dd._a.stop();const up=dd.classList.contains('up');
+    dd._a=MO.animate(dd,{opacity:[0,1],transform:[up?'translateY(10px) scale(.96)':'translateY(-10px) scale(.96)','translateY(0px) scale(1)']},{type:'spring',stiffness:420,damping:30});
+    const vis=[...ddScroll.children].filter(o=>o.offsetTop+o.offsetHeight>ddScroll.scrollTop&&o.offsetTop<ddScroll.scrollTop+ddScroll.clientHeight);
+    MO.animate(vis,{opacity:[0,1],transform:['translateX(-8px)','translateX(0px)']},{duration:.35,ease:EZ,delay:MO.stagger(.022)});
+    MO.animate(ddFoot,{opacity:[0,1]},{duration:.4,delay:.12});
+  }
+}
+function ddClose(back){
+  if(dd.hidden||dd._closing)return;
+  const done=()=>{dd._closing=false;dd.hidden=true;dd.style.opacity='';dd.style.transform=''};
+  if(MO){dd._closing=true;if(dd._a)dd._a.stop();dd._a=MO.animate(dd,{opacity:0,transform:'translateY(-6px) scale(.97)'},{duration:.16,ease:'easeIn'});dd._a.then(done)}else done();
+  paint(null);const b=$('ddBtn');if(b){b.setAttribute('aria-expanded','false');if(back)b.focus({preventScroll:true})}
+}
+function ddChoose(l){ddClose(false);select(l,true);const b=$('ddBtn');b&&b.focus({preventScroll:true})}
+function bindDD(){
+  const b=$('ddBtn');if(!b)return;
+  b.addEventListener('click',()=>dd.hidden||dd._closing?ddOpen():ddClose(true));
+  b.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();ddOpen()}});
+}
+dd.addEventListener('keydown',e=>{
+  const go=n=>{e.preventDefault();ddSetAct(Math.max(FIRST,Math.min(TOP,n)),true)};
+  if(e.key==='ArrowDown')go(ddAct+1);else if(e.key==='ArrowUp')go(ddAct-1);
+  else if(e.key==='PageDown')go(ddAct+5);else if(e.key==='PageUp')go(ddAct-5);
+  else if(e.key==='Home')go(FIRST);else if(e.key==='End')go(TOP);
+  else if(e.key==='Enter'||e.key===' '){e.preventDefault();ddChoose(ddAct)}
+  else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();ddClose(true)}
+  else if(e.key==='Tab'){ddClose(false)}
+  else if(/^[0-9]$/.test(e.key)){const now=performance.now();typed=(now-typedT<900?typed:'')+e.key;typedT=now;const n=+typed;if(n>=FIRST&&n<=TOP)ddSetAct(n,true)}
+});
+ddScroll.addEventListener('pointermove',e=>{const o=e.target.closest('.opt');if(o&&+o.dataset.l!==ddAct)ddSetAct(+o.dataset.l,false)});
+ddScroll.addEventListener('click',e=>{const o=e.target.closest('.opt');if(o)ddChoose(+o.dataset.l)});
+ddFoot.addEventListener('click',()=>ddChoose(ddAct));
+document.addEventListener('pointerdown',e=>{if(!dd.hidden&&!dd.contains(e.target)&&!e.target.closest('#ddBtn'))ddClose(false)});
+addEventListener('resize',()=>{if(!dd.hidden)ddPlace()});
+addEventListener('scroll',()=>{if(!dd.hidden)ddPlace()},{passive:true});
+
+/* ---------- photo tour: Rockhill's renders with slow camera moves ---------- */
+const TOUR={
+ S:[{img:'studio-living',n:'Living and sleeping',a:'Studio room · 283 sq ft',d:'Bed, lounge chair and a marble media wall in one bright room.'},
+    {img:'studio-kitchen',fit:1,n:'Kitchenette',a:'Pantry · 36 sq ft',d:'Walnut cabinets, a marble splashback and an under-lit worktop with sink.'},
+    {img:'studio-sleeping',n:'Sleeping area',a:'Studio room',d:'Upholstered bed facing a walnut and marble media wall.'},
+    {img:'studio-wardrobe',n:'Wardrobe',a:'Studio room',d:'Glass-fronted wardrobe beside the bed, lit from within.'},
+    {img:'bath-shower',n:'Shower room',a:'47 sq ft',d:'Walk-in glass shower, wall-hung WC and a walnut vanity.'}],
+ 1:[{img:'1bed-family',n:'Family hall',a:'319 sq ft with the dining area',d:'Marble feature wall, sculpted chandelier and full-height windows.'},
+    {img:'1bed-dining',n:'Dining',a:'Part of the family hall',d:'Six-seat dining under a brass chandelier, framed in marble and walnut.'},
+    {img:'1bed-kitchen',n:'Kitchen',a:'113 sq ft',d:'Closed L-shaped kitchen with a marble splashback and full-height fridge.'},
+    {img:'1bed-master',n:'Master bedroom',a:'233 sq ft',d:'Upholstered bed, dressing table and soft daylight through sheer curtains.'},
+    {img:'bath-tub',n:'Bathroom',a:'49 sq ft',d:'Bathtub, wall-hung WC and a floating walnut vanity with a lit mirror.'}],
+ 2:[{img:'2bed-living',n:'Living hall',a:'356 sq ft',d:'Velvet sofa, dining for four and a brass chandelier in one open space.'},
+    {img:'2bed-kitchen',n:'Kitchen and dining',a:'Kitchen 100 sq ft',d:'Kitchen and dining opening onto the lounge, in marble and dark walnut.'},
+    {img:'2bed-master',n:'Master bedroom',a:'220 sq ft',d:'A wall of sheer curtains, a mirrored dressing wall and a balcony door.'},
+    {img:'2bed-bedroom',n:'Second bedroom',a:'189 sq ft',d:'A full-size second bedroom with a bench and bedside lamps.'},
+    {img:'bath-shower',n:'Bathroom',a:'45 sq ft',d:'Walk-in glass shower, wall-hung WC and a walnut vanity.'}]
+};
+const big=()=>(innerWidth*(devicePixelRatio||1)>1500);
+const rsrc=n=>`img/r/${n}-${big()?2304:1280}.jpg`;
+const PRE={};
+function preload(n){const u=rsrc(n);if(!PRE[u]){const i=new Image();i.src=u;PRE[u]=(i.decode?i.decode():new Promise(r=>{i.onload=i.onerror=r})).catch(()=>{})}return PRE[u]}
+const P={open:false,type:null,i:0,front:null,back:null,kb:null,auto:null,fromFlight:false,busy:false};
+const pA=$('pA'),pB=$('pB'),proomsEl=$('prooms');
+const KB=[['scale(1.02) translate(-1.2%,0.6%)','scale(1.13) translate(1.4%,-0.8%)'],['scale(1.12) translate(1.2%,-0.6%)','scale(1.03) translate(-1%,0.8%)'],['scale(1.03) translate(0.8%,1%)','scale(1.12) translate(-1%,-1%)']];
+const tall=()=>matchMedia('(max-aspect-ratio: 6/5)').matches;
+const KBT=[['scale(1)','scale(1.045)'],['scale(1.045)','scale(1)']];
+function kenburns(el,i){
+  if(P.kb)P.kb.stop();const soft=tall()||el.classList.contains('fitc');const [a,b]=(soft?KBT:KB)[i%(soft?KBT:KB).length];
+  if(MO)P.kb=MO.animate(el,{transform:[a,b]},{duration:11,ease:'linear'});else el.style.transform=reduce?'none':b;
+}
+function pLabels(){
+  const T=P.type,r=TOUR[T][P.i];
+  $('pH').textContent=r.n;$('pS').textContent=`${r.a} · ${r.d}`;
+  $('pCount').innerHTML=`<b>${String(P.i+1).padStart(2,'0')}</b> / ${String(TOUR[T].length).padStart(2,'0')}`;
+  proomsEl.querySelectorAll('[data-r]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.r===P.i));
+  movePill(proomsEl,proomsEl.querySelector(`[data-r="${P.i}"]`),'rpill',true);
+  preload(TOUR[T][(P.i+1)%TOUR[T].length].img);
+}
+async function pGo(i,dir){
+  if(P.busy)return;const L=TOUR[P.type];i=(i+L.length)%L.length;if(i===P.i&&P.front&&P.front.style.opacity==='1')return;
+  P.busy=true;dir=dir||(i>P.i?1:-1);P.i=i;pLabels();
+  const r=L[i],u=rsrc(r.img);await preload(r.img);
+  const inn=P.front===pA?pB:pA,out=P.front;
+  inn.src=u;inn.alt=`${TYPES[P.type].n}: ${r.n}`;$('pBg').style.backgroundImage=`url(${u})`;
+  inn.classList.toggle('fitc',!!r.fit);$('ptour').classList.toggle('contain',!!r.fit);
+  if(MO&&out){
+    if(out._a)out._a.stop();if(P.kb)P.kb.stop();out._a=MO.animate(out,{opacity:0,filter:['blur(0px)','blur(6px)'],transform:dir>0?(tall()?'scale(1.12)':'scale(1.24)'):'scale(.94)'},{duration:1.1,ease:[.55,0,.6,1]});
+    if(inn._a)inn._a.stop();inn._a=MO.animate(inn,{opacity:[0,1],filter:['blur(0px)','blur(0px)']},{duration:1.1,ease:EZ});
+  }else{if(out)out.style.opacity=0;inn.style.opacity=1}
+  kenburns(inn,i);P.front=inn;
+  setTimeout(()=>{P.busy=false},reduce?0:650);
+}
+function pAuto(on){
+  clearTimeout(P.auto);P.auto=null;const b=$('pPlay'),bar=$('pProg');if(bar._a)bar._a.stop();bar.style.width='0';
+  if(b)b.textContent=on?'Pause tour':'Play tour';if(b)b.setAttribute('aria-pressed',on);
+  if(!on)return;
+  const step=()=>{if(MO)bar._a=MO.animate(bar,{width:['0%','100%']},{duration:6.5,ease:'linear'});P.auto=setTimeout(async()=>{await pGo(P.i+1,1);step()},6500)};
+  step();
+}
+function openPhoto(type,fromFlight){
+  P.type=type;P.i=0;P.open=true;P.fromFlight=fromFlight;P.front=null;
+  for(const im of [pA,pB]){if(im._a)im._a.stop();im.style.opacity=0;im.style.filter='none';im.style.transform=''}
+  const T=TYPES[type],unit=fromFlight?free(sel).find(u=>u.t===type):null;
+  $('pK').textContent=unit?`Level ${sel} · Unit ${unit.no} · ${T.n}`:`${T.n} · ${Math.round(T.area)} sq ft`;
+  $('pWa').href=wa(unit?`Hello, I am interested in unit ${unit.no} (${T.n}, level ${sel}) at Rockhill Tower.`:`Hello, I would like to know more about the ${T.n} homes at Rockhill Tower.`);
+  proomsEl.innerHTML=TOUR[type].map((r,i)=>`<button data-r="${i}" aria-pressed="false">${r.n}</button>`).join('')
+    +'<button class="ptbtn" id="pPlay" aria-pressed="false">Play tour</button>'
+    +(fromFlight?'<button class="ptbtn" id="p3d">3D plan</button>':'')
+    +`<button class="gbtn" id="pBack">${fromFlight?'Back to the tower':'Close'}</button>`;
+  const el=$('ptour');el.classList.remove('ready');el.classList.add('open');document.body.style.overflow='hidden';
+  if(MO&&!fromFlight)MO.animate(el,{opacity:[0,1]},{duration:.5});
+  pGo(0,1).then(()=>{el.classList.add('ready');movePill(proomsEl,proomsEl.querySelector('[data-r="0"]'),'rpill',false);
+    if(MO)MO.animate(proomsEl.querySelectorAll('button'),{opacity:[0,1],transform:['translateY(10px)','translateY(0px)']},{duration:.45,ease:EZ,delay:MO.stagger(.05)});
+    $('pBack').focus({preventScroll:true})});
+}
+async function closePhoto(toTower){
+  pAuto(false);if(P.kb)P.kb.stop();const el=$('ptour');el.classList.remove('ready');
+  if(toTower){flash.style.opacity=1;await new Promise(r=>setTimeout(r,reduce?0:420))}
+  else if(MO){await MO.animate(el,{opacity:0},{duration:.4})}
+  el.classList.remove('open');el.style.opacity='';P.open=false;
+  if(!toTower){document.body.style.overflow='';const b=document.querySelector(`.card [data-tour="${P.type}"]`);b&&b.focus({preventScroll:true})}
+}
+proomsEl.addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.r!==undefined){pAuto(false);pGo(+b.dataset.r)}
+  else if(b.id==='pPlay')pAuto(!P.auto);
+  else if(b.id==='pBack'){P.fromFlight?flyOut():closePhoto(false)}
+  else if(b.id==='p3d'){pAuto(false);try{await ensure3D()}catch(err){return}
+    await closePhoto(true);openTour();flash.style.opacity=0}
+});
+$('pPrev').addEventListener('click',()=>{pAuto(false);pGo(P.i-1,-1)});
+$('pNext').addEventListener('click',()=>{pAuto(false);pGo(P.i+1,1)});
+addEventListener('keydown',e=>{
+  if(!P.open||lbOpen())return;
+  if(e.key==='ArrowRight'){pAuto(false);pGo(P.i+1,1)}else if(e.key==='ArrowLeft'){pAuto(false);pGo(P.i-1,-1)}
+  else if(e.key==='Escape'){P.fromFlight?flyOut():closePhoto(false)}
+});
+{let sx=null;$('ptour').addEventListener('pointerdown',e=>{if(!e.target.closest('button,a'))sx=e.clientX});
+ $('ptour').addEventListener('pointerup',e=>{if(sx===null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>50){pAuto(false);pGo(P.i+(dx<0?1:-1),dx<0?1:-1)}});}
+
+/* ---------- gallery + lightbox ---------- */
+const GS={"a-bar":[1280,697],"a-billiards":[1280,697],"a-cinema":[1280,729],"a-firepit":[1280,697],"a-gym":[1280,720],"a-gym-cardio":[1280,720],"a-gym-weights":[1280,720],"a-jacuzzi":[1280,720],"a-jogging":[1280,697],"a-library":[1280,720],"a-library-2":[1280,720],"a-massage":[490,860],"a-padel":[1280,697],"a-padel-track":[1280,697],"a-pool-day":[1283,860],"a-pool-loungers":[1283,860],"a-pool-night":[1280,697],"a-pool-trees":[1283,860],"a-sauna":[490,860],"a-sauna-2":[490,860],"a-steam":[860,860],"a-yoga":[1280,697],"i-bedroom-glass":[1024,686],"i-bedroom-small":[1283,860],"i-bedroom-walkin":[1024,686],"i-living-ring":[1283,860],"i-living-round":[1283,860],"i-living-tv":[1283,860],"t-aerial":[1282,860],"t-corner":[1283,860],"t-entrance":[1282,860],"t-lobby":[821,860],"t-lobby-night":[1283,860],"t-roof-plan":[839,860],"t-street":[1283,860],"t-sunset":[1152,860]};
+const GAL={
+ 'Amenities':[['a-pool-day','Rooftop pool'],['a-pool-trees','Pool deck under the pergola'],['a-pool-loungers','Loungers by the pool'],['a-pool-night','The pool at night'],['a-padel','Padel court'],['a-padel-track','Padel court and track'],['a-jogging','Jogging track'],['a-firepit','Fire-pit lounge'],['a-yoga','Yoga deck and play area'],['a-gym','Gym'],['a-gym-cardio','Cardio studio'],['a-gym-weights','Weights room'],['a-jacuzzi','Jacuzzi with a view'],['a-sauna','Sauna'],['a-steam','Steam room'],['a-massage','Treatment room'],['a-cinema','Private cinema'],['a-library','Library'],['a-library-2','Reading corridor'],['a-billiards','Games garden'],['a-bar','Bar and billiards']],
+ 'Interiors':[['r:1bed-family','Family hall'],['r:1bed-dining','Dining'],['r:1bed-kitchen','Kitchen'],['r:2bed-living','Living hall'],['r:2bed-kitchen','Kitchen and dining'],['i-living-ring','Living room'],['i-living-tv','Lounge'],['i-living-round','Living and dining'],['r:1bed-master','Master bedroom'],['r:2bed-master','Master bedroom'],['r:2bed-bedroom','Bedroom'],['r:studio-living','Studio'],['r:studio-wardrobe','Studio wardrobe'],['r:studio-kitchen','Studio kitchenette'],['i-bedroom-small','Bedroom'],['i-bedroom-walkin','Bedroom and walk-in wardrobe'],['i-bedroom-glass','Bedroom and wardrobe'],['r:bath-tub','Bathroom'],['r:bath-shower','Shower room']],
+ 'The tower':[['t-sunset','Sunset over Al Alia'],['t-aerial','From above'],['t-entrance','Entrance at night'],['t-lobby-night','Lobby facade'],['t-street','Palm-lined approach'],['t-corner','Lobby corner by day'],['t-lobby','Lobby entrance'],['t-roof-plan','The roof from above']]
+};
+const gThumb=k=>k.startsWith('r:')?{src:`img/r/${k.slice(2)}-1280.jpg`,w:1280,h:858}:{src:`img/g/${k}-th.jpg`,w:GS[k][0],h:GS[k][1]};
+const gBig=k=>k.startsWith('r:')?`img/r/${k.slice(2)}-2304.jpg`:`img/g/${k}-full.jpg`;
+let gCat='Amenities',lbI=0;
+const gchips=$('gchips'),gstrip=$('gstrip');
+gchips.innerHTML=Object.keys(GAL).map(c=>`<button role="tab" aria-selected="${c===gCat}" data-c="${c}">${c} <span style="opacity:.6">${GAL[c].length}</span></button>`).join('');
+function gRender(){
+  gstrip.innerHTML=GAL[gCat].map(([k,c],i)=>{const t=gThumb(k);return `<figure tabindex="0" role="button" data-i="${i}" aria-label="Open ${c}"><img src="${t.src}" width="${t.w}" height="${t.h}" alt="${c}" loading="lazy" decoding="async"><figcaption>${c}</figcaption></figure>`}).join('');
+  gstrip.scrollLeft=0;
+  if(MO)MO.animate(gstrip.children,{opacity:[0,1],transform:['translateX(18px)','translateX(0px)']},{duration:.5,ease:EZ,delay:MO.stagger(.04)});
+}
+gchips.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b||b.dataset.c===gCat)return;gCat=b.dataset.c;gchips.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-selected',x===b));gRender()});
+$('gPrev').addEventListener('click',()=>gstrip.scrollBy({left:-gstrip.clientWidth*.8,behavior:reduce?'auto':'smooth'}));
+$('gNext').addEventListener('click',()=>gstrip.scrollBy({left:gstrip.clientWidth*.8,behavior:reduce?'auto':'smooth'}));
+const lb=$('lb'),lbImg=$('lbImg');const lbOpen=()=>lb.classList.contains('open');
+function lbShow(i){const L=GAL[gCat];lbI=(i+L.length)%L.length;const [k,c]=L[lbI];lbImg.src=gBig(k);lbImg.alt=c;$('lbCap').textContent=`${c} · ${lbI+1} of ${L.length}`;[1,-1].forEach(d=>{const n=L[(lbI+d+L.length)%L.length];(new Image()).src=gBig(n[0])});
+  if(MO)MO.animate(lbImg,{opacity:[0,1],transform:['scale(.98)','scale(1)']},{duration:.35,ease:EZ})}
+let lbBack=null;
+function lbOpenAt(i){lbBack=document.activeElement;lb.classList.add('open');document.body.style.overflow='hidden';lbShow(i);$('lbX').focus({preventScroll:true})}
+function lbClose(){lb.classList.remove('open');document.body.style.overflow='';lbBack&&lbBack.focus&&lbBack.focus({preventScroll:true})}
+gstrip.addEventListener('click',e=>{const f=e.target.closest('figure');if(f)lbOpenAt(+f.dataset.i)});
+gstrip.addEventListener('keydown',e=>{const f=e.target.closest('figure');if(f&&(e.key==='Enter'||e.key===' ')){e.preventDefault();lbOpenAt(+f.dataset.i)}});
+$('lbP').addEventListener('click',()=>lbShow(lbI-1));$('lbN').addEventListener('click',()=>lbShow(lbI+1));$('lbX').addEventListener('click',lbClose);
+lb.addEventListener('click',e=>{if(e.target===lb)lbClose()});
+addEventListener('keydown',e=>{if(!lbOpen())return;if(e.key==='Escape')lbClose();else if(e.key==='ArrowRight')lbShow(lbI+1);else if(e.key==='ArrowLeft')lbShow(lbI-1)});
+gRender();
+
+/* ---------- brochure sections ---------- */
+$('cards').innerHTML=KEYS.map(k=>{const T=TYPES[k];
+  const top=IMG[k]?`<div class="im"><img src="${IMG[k]}" alt="${T.n} floor plan" loading="lazy"></div>`
+    :`<div class="tb"><p>The three-bedroom plan is shared on request.</p><a class="gbtn" href="${wa('Hello, could you send me the three-bedroom plan for Rockhill Tower?')}" target="_blank" rel="noopener">Ask for the 3-bed plan</a></div>`;
+  return `<article class="card">${top}<div class="tx"><h3>${T.n}</h3><p>${T.line}</p><span class="c">${T.count} residences${T.area?' · '+Math.round(T.area).toLocaleString('en')+' sq ft':''}</span>${TOUR[k]?`<button class="gbtn tour" data-tour="${k}">Take the tour</button>`:''}</div></article>`}).join('');
+$('cards').addEventListener('click',e=>{const b=e.target.closest('[data-tour]');if(b)openPhoto(b.dataset.tour,false)});
+$('am').innerHTML=AMEN.map(a=>`<li>${a}</li>`).join('');
+panelIntro();
+
+/* ---------- programmed smooth scrolling (mouse wheels) ---------- */
+{
+  const fine=matchMedia('(pointer:fine)').matches;
+  if(fine&&!reduce){
+    const root=document.documentElement;root.style.scrollBehavior='auto';
+    let cur=scrollY,target=scrollY,running=false,lastSet=-1,lastWheel=0,wheelSeq=0;
+    const maxY=()=>root.scrollHeight-innerHeight;
+    const LERP=.075, LEAD=.5;let MAXSTEP=17;
+    function tick(){
+      const d=target-cur;
+      if(Math.abs(d)<.4){cur=target;running=false}
+      else{cur+=Math.sign(d)*Math.min(Math.abs(d)*LERP+.25,MAXSTEP)}
+      lastSet=Math.round(cur);scrollTo({top:cur,behavior:'instant'});
+      if(running)requestAnimationFrame(tick);
+    }
+    function go(to){
+      target=Math.max(0,Math.min(maxY(),to));
+      if(!running){cur=scrollY;running=true;requestAnimationFrame(tick)}
+    }
+    addEventListener('wheel',e=>{
+      if(e.ctrlKey||e.defaultPrevented)return;
+      if(document.body.style.overflow==='hidden')return;            // the 3D tour is open
+      if(e.target.closest&&e.target.closest('.ddscroll,#tour,.rooms'))return;
+      const now=performance.now(), dy=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*innerHeight:e.deltaY;
+      // trackpads send many small, fractional deltas with momentum: leave those native
+      if(Math.abs(dy)<40&&!Number.isInteger(e.deltaY)&&now-lastWheel<50){lastWheel=now;return}
+      lastWheel=now;e.preventDefault();
+      if(!running){cur=target=scrollY;lastSet=Math.round(scrollY)}
+      MAXSTEP=17;const step=Math.sign(dy)*Math.min(Math.abs(dy),120);
+      const lead=innerHeight*LEAD;
+      go(Math.max(cur-lead,Math.min(cur+lead,target+step)));
+    },{passive:false});
+    // anything else that scrolls (scrollbar, keys, focus, code): follow it
+    addEventListener('scroll',()=>{if(Math.abs(scrollY-lastSet)>2){cur=target=scrollY;running=false}},{passive:true});
+    // menu links glide with the same feel
+    document.addEventListener('click',e=>{
+      const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+      const id=a.getAttribute('href').slice(1),el=id?document.getElementById(id):null;if(!el&&id)return;
+      e.preventDefault();cur=scrollY;lastSet=Math.round(scrollY);MAXSTEP=60;
+      const y=el?el.getBoundingClientRect().top+scrollY-(id==='top'?0:72):0;
+      // links may travel far: let them run without the lead cap
+      target=Math.max(0,Math.min(maxY(),y));if(!running){running=true;requestAnimationFrame(tick)}
+      history.replaceState(null,'',id?'#'+id:location.pathname);
+    });
+  }
+}
+/* ---------- hero entrance ---------- */
+if(MO){
+  MO.animate($('heroImage'),{opacity:[0,1]},{duration:1.4,ease:EZ});
+  MO.animate(panel,{opacity:[0,1],transform:['translateY(18px)','translateY(0px)']},{duration:.9,ease:EZ,delay:.55});
+  MO.animate('nav a',{opacity:[0,1],transform:['translateY(-6px)','translateY(0px)']},{duration:.6,ease:EZ,delay:MO.stagger(.06,{startDelay:.3})});
+}
+/* ---------- soft reveals as you scroll (Motion) ---------- */
+if(window.Motion&&!reduce){
+  const {animate,inView,stagger}=Motion, ez=[.22,1,.36,1];
+  const items=[...document.querySelectorAll('[data-reveal]')], cards=[...$('cards').children], chips=[...document.querySelectorAll('.brands li')];
+  [...items,...cards,...chips].forEach(el=>{el.style.opacity=0;el.style.transform='translateY(28px)'});
+  inView(items,x=>{animate(x.target||x,{opacity:1,transform:'translateY(0px)'},{duration:.9,ease:ez})},{margin:'0px 0px -12% 0px'});
+  inView($('cards'),()=>{animate(cards,{opacity:1,transform:'translateY(0px)'},{duration:.8,ease:ez,delay:stagger(.09)})},{margin:'0px 0px -12% 0px'});
+  inView(document.querySelector('.brands'),()=>{animate(chips,{opacity:1,transform:'translateY(0px)'},{duration:.6,ease:ez,delay:stagger(.06,{startDelay:.2})})},{margin:'0px 0px -12% 0px'});
+}
+}
+</script>
+</body>
+</html>
