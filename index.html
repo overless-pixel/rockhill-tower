@@ -162,6 +162,8 @@ body.flying .panel,body.flying header{opacity:0;pointer-events:none}
 .pimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity,filter;transform-origin:50% 50%}
 .pbg{position:absolute;inset:-60px;background:center/cover no-repeat #0b0c0f;filter:blur(30px) brightness(.42) saturate(1.15);display:none;transition:background-image .6s}
 @media(max-aspect-ratio:6/5){#ptour .pimg{object-fit:contain}.pbg{display:block}}
+#ptour .pimg.fitc{object-fit:contain}
+#ptour.contain .pbg{display:block}
 .pshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(8,10,14,.55),transparent 26%,transparent 70%,rgba(8,10,14,.7))}
 #ptour .tt,#ptour .rooms,#ptour .wa,.pnav,.pcount,.pnote{opacity:0;transition:opacity .5s}
 #ptour.ready .tt,#ptour.ready .rooms,#ptour.ready .wa,#ptour.ready .pnav,#ptour.ready .pcount,#ptour.ready .pnote{opacity:1}
@@ -788,6 +790,7 @@ addEventListener('scroll',()=>{if(!dd.hidden)ddPlace()},{passive:true});
 /* ---------- photo tour: Rockhill's renders with slow camera moves ---------- */
 const TOUR={
  S:[{img:'studio-living',n:'Living and sleeping',a:'Studio room · 283 sq ft',d:'Bed, lounge chair and a marble media wall in one bright room.'},
+    {img:'studio-kitchen',fit:1,n:'Kitchenette',a:'Pantry · 36 sq ft',d:'Walnut cabinets, a marble splashback and an under-lit worktop with sink.'},
     {img:'studio-sleeping',n:'Sleeping area',a:'Studio room',d:'Upholstered bed facing a walnut and marble media wall.'},
     {img:'studio-wardrobe',n:'Wardrobe',a:'Studio room',d:'Glass-fronted wardrobe beside the bed, lit from within.'},
     {img:'bath-shower',n:'Shower room',a:'47 sq ft',d:'Walk-in glass shower, wall-hung WC and a walnut vanity.'}],
@@ -812,7 +815,7 @@ const KB=[['scale(1.02) translate(-1.2%,0.6%)','scale(1.13) translate(1.4%,-0.8%
 const tall=()=>matchMedia('(max-aspect-ratio: 6/5)').matches;
 const KBT=[['scale(1)','scale(1.045)'],['scale(1.045)','scale(1)']];
 function kenburns(el,i){
-  if(P.kb)P.kb.stop();const [a,b]=(tall()?KBT:KB)[i%(tall()?KBT:KB).length];
+  if(P.kb)P.kb.stop();const soft=tall()||el.classList.contains('fitc');const [a,b]=(soft?KBT:KB)[i%(soft?KBT:KB).length];
   if(MO)P.kb=MO.animate(el,{transform:[a,b]},{duration:11,ease:'linear'});else el.style.transform=reduce?'none':b;
 }
 function pLabels(){
@@ -829,6 +832,7 @@ async function pGo(i,dir){
   const r=L[i],u=rsrc(r.img);await preload(r.img);
   const inn=P.front===pA?pB:pA,out=P.front;
   inn.src=u;inn.alt=`${TYPES[P.type].n}: ${r.n}`;$('pBg').style.backgroundImage=`url(${u})`;
+  inn.classList.toggle('fitc',!!r.fit);$('ptour').classList.toggle('contain',!!r.fit);
   if(MO&&out){
     if(out._a)out._a.stop();if(P.kb)P.kb.stop();out._a=MO.animate(out,{opacity:0,filter:['blur(0px)','blur(6px)'],transform:dir>0?(tall()?'scale(1.12)':'scale(1.24)'):'scale(.94)'},{duration:1.1,ease:[.55,0,.6,1]});
     if(inn._a)inn._a.stop();inn._a=MO.animate(inn,{opacity:[0,1],filter:['blur(0px)','blur(0px)']},{duration:1.1,ease:EZ});
@@ -888,7 +892,7 @@ addEventListener('keydown',e=>{
 const GS={"i-living-ring": [640, 429], "i-living-tv": [640, 429], "i-living-round": [640, 429], "i-bedroom-small": [640, 429], "i-bedroom-walkin": [640, 429], "i-bedroom-glass": [640, 429], "a-pool-day": [640, 429], "a-pool-trees": [640, 429], "a-pool-loungers": [640, 429], "a-pool-night": [640, 348], "a-jogging": [640, 348], "a-padel": [640, 348], "a-padel-track": [640, 348], "a-firepit": [640, 348], "a-yoga": [640, 348], "a-gym": [640, 360], "a-gym-cardio": [640, 360], "a-gym-weights": [640, 360], "a-jacuzzi": [640, 360], "a-sauna": [640, 1124], "a-sauna-2": [640, 1124], "a-steam": [640, 640], "a-massage": [640, 1124], "a-cinema": [640, 364], "a-library": [640, 360], "a-library-2": [640, 360], "a-billiards": [640, 348], "a-bar": [640, 348], "t-sunset": [640, 478], "t-aerial": [640, 429], "t-entrance": [640, 429], "t-lobby-night": [640, 429], "t-street": [640, 429], "t-corner": [640, 429], "t-lobby": [640, 670], "t-roof-plan": [640, 656]};
 const GAL={
  'Amenities':[['a-pool-day','Rooftop pool'],['a-pool-trees','Pool deck under the pergola'],['a-pool-loungers','Loungers by the pool'],['a-pool-night','The pool at night'],['a-padel','Padel court'],['a-padel-track','Padel court and track'],['a-jogging','Jogging track'],['a-firepit','Fire-pit lounge'],['a-yoga','Yoga deck and play area'],['a-gym','Gym'],['a-gym-cardio','Cardio studio'],['a-gym-weights','Weights room'],['a-jacuzzi','Jacuzzi with a view'],['a-sauna','Sauna'],['a-steam','Steam room'],['a-massage','Treatment room'],['a-cinema','Private cinema'],['a-library','Library'],['a-library-2','Reading corridor'],['a-billiards','Games garden'],['a-bar','Bar and billiards']],
- 'Interiors':[['r:1bed-family','Family hall'],['r:1bed-dining','Dining'],['r:1bed-kitchen','Kitchen'],['r:2bed-living','Living hall'],['r:2bed-kitchen','Kitchen and dining'],['i-living-ring','Living room'],['i-living-tv','Lounge'],['i-living-round','Living and dining'],['r:1bed-master','Master bedroom'],['r:2bed-master','Master bedroom'],['r:2bed-bedroom','Bedroom'],['r:studio-living','Studio'],['r:studio-wardrobe','Studio wardrobe'],['i-bedroom-small','Bedroom'],['i-bedroom-walkin','Bedroom and walk-in wardrobe'],['i-bedroom-glass','Bedroom and wardrobe'],['r:bath-tub','Bathroom'],['r:bath-shower','Shower room']],
+ 'Interiors':[['r:1bed-family','Family hall'],['r:1bed-dining','Dining'],['r:1bed-kitchen','Kitchen'],['r:2bed-living','Living hall'],['r:2bed-kitchen','Kitchen and dining'],['i-living-ring','Living room'],['i-living-tv','Lounge'],['i-living-round','Living and dining'],['r:1bed-master','Master bedroom'],['r:2bed-master','Master bedroom'],['r:2bed-bedroom','Bedroom'],['r:studio-living','Studio'],['r:studio-wardrobe','Studio wardrobe'],['r:studio-kitchen','Studio kitchenette'],['i-bedroom-small','Bedroom'],['i-bedroom-walkin','Bedroom and walk-in wardrobe'],['i-bedroom-glass','Bedroom and wardrobe'],['r:bath-tub','Bathroom'],['r:bath-shower','Shower room']],
  'The tower':[['t-sunset','Sunset over Al Alia'],['t-aerial','From above'],['t-entrance','Entrance at night'],['t-lobby-night','Lobby facade'],['t-street','Palm-lined approach'],['t-corner','Lobby corner by day'],['t-lobby','Lobby entrance'],['t-roof-plan','The roof from above']]
 };
 const gThumb=k=>k.startsWith('r:')?{src:`img/r/${k.slice(2)}-1280.jpg`,w:1280,h:858}:{src:`img/g/${k}-640.jpg`,w:GS[k][0],h:GS[k][1]};
