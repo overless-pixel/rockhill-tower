@@ -419,12 +419,15 @@ const PLANS={
 };
 const AMEN=['Rooftop pool','Padel court','Jogging track','Gym','Sauna & steam','Jacuzzi','Private cinema','Library','Games room','Golf simulator','Mosque','Smart-home controls'];
 /* floor geometry in the 4K sunset render (3840 × 2640): each band is a real row of windows, drawn in the tower's own perspective.
-   Measured from the balconies: the left face climbs to the corner, the front face falls to the right, steeper near the top; both meet the horizon at y=H. */
+   Measured from the balcony slabs: the left side climbs to the corner, the window column stays almost level, the front falls to the right, all steeper near the top. */
 const IW=3840, IH=2640;
-const G={H:2230,VL:215,VF:13430,XL:1470,XC:1690,XR:2278,A:66.44,B0:358.12,XM:1750};
+const G={H:2429,VL:-55,VW:-13480,VF:10100,XL:1470,X1:1700,X2:1815,XR:2278,XM:1750,A:66.44,B0:358.12};
+const slp=(y,v,x)=>(G.H-y)/(v-x);
 const FIRST=7, TOP=26, LOWEST=0;
-function edge(k){const y0=G.B0+G.A*k,y=y0-(G.H-y0)/(G.VF-G.XC)*(G.XM-G.XC),sl=(G.H-y)/(G.VL-G.XC),sf=(G.H-y)/(G.VF-G.XC);
-  return [[G.XL,y+sl*(G.XL-G.XC)],[G.XC,y],[G.XR,y+sf*(G.XR-G.XC)]]}
+/* three faces per floor: left side, the small-window column, the balcony front */
+function edge(k){const ym=G.B0+G.A*k,y1=ym-slp(ym,G.VW,1757)*(G.XM-G.X1),y2=y1+slp(y1,G.VW,1757)*(G.X2-G.X1),
+  yr=y2+slp(y2,G.VF,2050)*(G.XR-G.X2),yl=y1+slp(y1,G.VL,1585)*(G.XL-G.X1);
+  return [[G.XL,yl],[G.X1,y1],[G.X2,y2],[G.XR,yr]]}
 const polyAt=k=>{const a=edge(k+.04),b=edge(k+.96);return a.concat(b.reverse()).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')};
 const kOf=l=>TOP-l;
 const BAR={x0:2350,x1:3790,y0:1080};   // floor bar sits in the sky to the right of the tower
