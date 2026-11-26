@@ -39,7 +39,7 @@ const css = `
 #walk.open{display:block}
 #walk canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;outline:none}
 #walk canvas.drag{cursor:grabbing}
-#walk .tt{position:absolute;left:20px;top:20px;z-index:3;background:rgba(14,15,18,.62);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px;max-width:min(420px,calc(100vw - 40px))}
+#walk .tt{opacity:1;transition:none;position:absolute;left:20px;top:20px;z-index:3;background:rgba(14,15,18,.62);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px;max-width:min(420px,calc(100vw - 40px))}
 #walk .tt p{margin:0 0 4px;font-size:12px;color:#e7c879;letter-spacing:.02em}
 #walk .tt h2{font:300 28px/1.05 'Josefin Sans',sans-serif;margin:0}
 #walk .tt .sub{font-size:13px;color:#d7dbe2;margin-top:4px}
