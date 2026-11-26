@@ -419,9 +419,9 @@ const PLANS={
 };
 const AMEN=['Rooftop pool','Padel court','Jogging track','Gym','Sauna & steam','Jacuzzi','Private cinema','Library','Games room','Golf simulator','Mosque','Smart-home controls'];
 /* floor geometry in the 4K sunset render (3840 × 2640): each band is a real row of windows, drawn in the tower's own perspective.
-   The left face runs up toward the corner, the front face is almost level: both meet a horizon at y=H. */
+   Measured from the balconies: the left face climbs to the corner, the front face falls to the right, steeper near the top; both meet the horizon at y=H. */
 const IW=3840, IH=2640;
-const G={H:2738,VL:-1920,VF:60000,XL:1470,XC:1690,XR:2278,A:66.44,B0:358.12,XM:1750};
+const G={H:2230,VL:215,VF:13430,XL:1470,XC:1690,XR:2278,A:66.44,B0:358.12,XM:1750};
 const FIRST=7, TOP=26, LOWEST=0;
 function edge(k){const y0=G.B0+G.A*k,y=y0-(G.H-y0)/(G.VF-G.XC)*(G.XM-G.XC),sl=(G.H-y)/(G.VL-G.XC),sf=(G.H-y)/(G.VF-G.XC);
   return [[G.XL,y+sl*(G.XL-G.XC)],[G.XC,y],[G.XR,y+sf*(G.XR-G.XC)]]}
