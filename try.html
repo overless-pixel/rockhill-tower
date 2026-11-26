@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rockhill Tower · Choose your floor</title>
-<meta name="description" content="Rockhill Tower in Al Alia, Ajman: 416 freehold homes from studios to three bedrooms. Choose your floor on the tower and walk through each home in 3D.">
+<meta name="description" content="Rockhill Tower in Al Alia, Ajman: 416 freehold homes, from studios to two bedrooms. Choose your floor on the tower and walk through each home in 3D.">
 <meta name="theme-color" content="#131518">
 <meta property="og:title" content="Rockhill Tower · A new standard of living in Ajman">
 <meta property="og:description" content="Choose your floor on the tower and walk through each home in 3D. 416 freehold homes in Al Alia, Ajman.">
@@ -221,6 +221,8 @@ body.flying .panel,body.flying header{opacity:0;pointer-events:none}
 /* brochure sections */
 .res{background:var(--bg2)}
 .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:36px}
+#cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:900px){#cards{grid-template-columns:minmax(0,1fr)}}
 .card{background:#2a2a2d;display:flex;flex-direction:column}
 .card .im{aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:10px}
 .card .im img{max-height:100%;width:auto;object-fit:contain}
@@ -311,8 +313,8 @@ footer{padding:28px max(5vw,16px);border-top:1px solid var(--line);color:#8f8c84
 <section class="band res" id="residences">
   <div class="wrap">
     <div data-reveal><p class="k">Residences</p>
-    <h2>Studios to three bedrooms</h2>
-    <p class="lede" style="margin-top:16px">Four home types across 27 residential floors, with parking underground, with wood floors throughout.</p></div>
+    <h2>Studios to two bedrooms</h2>
+    <p class="lede" style="margin-top:16px">Three home types across 27 residential floors, with parking underground.</p></div>
     <div class="grid4" id="cards"></div>
   </div>
 </section>
@@ -360,13 +362,13 @@ footer{padding:28px max(5vw,16px);border-top:1px solid var(--line);color:#8f8c84
     <dl>
       <dt>Location</dt><dd>Al Alia, Ajman · about 39 min to Downtown Dubai</dd>
       <dt>Ownership</dt><dd>Freehold, all nationalities</dd>
-      <dt>Homes</dt><dd>154 studios · 129 one-bed · 78 two-bed · 55 three-bed</dd>
+      <dt>Homes</dt><dd>154 studios · 129 one-bed · 78 two-bed</dd>
       <dt>WhatsApp</dt><dd>+971 56 434 3002</dd>
     </dl>
   </div>
 </section>
 </main>
-<footer>Concept site prepared for Rockhill Development. Images are artist's impressions; renders and floor plans © Rockhill Development, and the 3D homes are built from those plans. Unit numbers, the mix of homes on each floor and availability are sample data; the three-bed count is the 416 total minus the other types.</footer>
+<footer>Concept site prepared for Rockhill Development. Images are artist's impressions; renders and floor plans © Rockhill Development, and the 3D homes are built from those plans. Unit numbers, the mix of homes on each floor and availability are sample data.</footer>
 
 <div id="flash"></div>
 <div id="tour" role="dialog" aria-modal="true" aria-labelledby="tH">
@@ -407,7 +409,6 @@ const TYPES={
   S:{n:'Studio',count:154,area:353.49,line:'Smart, functional living for individuals and investors'},
   1:{n:'1 Bed',count:129,area:689.21,line:'More room, more privacy, more comfort'},
   2:{n:'2 Bed',count:78,area:948.19,line:'Designed for couples and families who need more space'},
-  3:{n:'3 Bed',count:55,area:null,line:'The largest homes in the tower'}
 };
 /* 3D homes traced from Rockhill's plans: walls [x0,y0,x1,y1,kind] in plan pixels. kind: w wall, p parapet, g glass, f wardrobe */
 const PLANS={
@@ -435,7 +436,7 @@ const BAR={x0:2350,x1:3790,y0:1080};   // floor bar sits in the sky to the right
 const CROP=[1360,40,1000,2600];        // tower close-up for picking on phones and tablets
 const MIX='8643,8742,8643,7743,8643,8742,8643,8643,8643,8643,8643,8643,8643,7743,8742,8643,7743,8742,8643,7743,8742,8643,7743,8732,7643,8732,7643'.split(',');
 function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
-const KEYS=['S','1','2','3'];
+const KEYS=['S','1','2'];
 const UNITS={};
 for(let l=FIRST;l<=TOP;l++){
   const m=MIX[l-FIRST],pos=[];
