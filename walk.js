@@ -206,8 +206,8 @@ function skyDome() {
   const r = rng(9); for (let k = 0; k < 4000; k++) { g.fillStyle = `rgba(255,${180 + r() * 60},${110 + r() * 70},${r() * .55})`; g.fillRect(r() * S, base + 40 + r() * (H - base - 40), 2, 2); }
   const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.wrapS = THREE.RepeatWrapping; t.anisotropy = maxAniso;
   const img = new Image(); img.onload = () => {
-    const tw = S / 6, th = tw * img.height / img.width, y0 = base + 20 - th * (520 / 587);
-    for (let i = 0; i < 6; i++) { g.save(); if (i % 2) { g.translate((i + 1) * tw, 0); g.scale(-1, 1); g.drawImage(img, 0, y0, tw, th); } else g.drawImage(img, i * tw, y0, tw, th); g.restore(); }
+    const tw = S / 4, th = tw * img.height / img.width, y0 = base + 20 - th * (520 / 587);
+    for (let i = 0; i < 4; i++) g.drawImage(img, i * tw, y0, tw, th);          // the skyline photo is made seamless left to right
     const fade = g.createLinearGradient(0, y0, 0, y0 + 70); fade.addColorStop(0, '#3f62a4'); fade.addColorStop(1, 'rgba(63,98,164,0)');
     g.fillStyle = fade; g.fillRect(0, y0, S, 70);
     const lo = g.createLinearGradient(0, y0 + th - 40, 0, y0 + th + 10); lo.addColorStop(0, 'rgba(42,36,51,0)'); lo.addColorStop(1, '#2a2433');
@@ -373,7 +373,8 @@ function buildFromPlan(k, D) {
       if (open) { const sl = piece(Math.max(0, gl - .9), gl, 0, 2.55, M.glass, .02); sl.position[alongX ? 'z' : 'x'] += .07; g.add(sl); }   // the open slider, parked behind
       const inward = alongX ? Math.sign(cy - (y0 + y1) / 2) || 1 : Math.sign(cx - (x0 + x1) / 2) || 1;
       const cw = Math.min(.36, L * .15);
-      for (const [a0, a1, mat, off] of [[0, cw, M.drape, .2], [L - cw, L, M.drape, .2], [cw, cw * 1.9, M.sheer, .13], [L - cw * 1.9, L - cw, M.sheer, .13]]) {
+      const sets = [[0, cw, M.drape, .2], [cw, cw * 1.9, M.sheer, .13]]; if (!open) sets.push([L - cw, L, M.drape, .2], [L - cw * 1.9, L - cw, M.sheer, .13]);   // keep the open door clear
+      for (const [a0, a1, mat, off] of sets) {
         const cu = piece(a0, a1, .02, SOF - .04, mat, .08); cu.position[alongX ? 'z' : 'x'] += inward * off; cu.castShadow = mat === M.drape; g.add(cu);
         const fo = Math.max(2, Math.round((a1 - a0) / .08)); for (let f = 0; f < fo; f++) { const fl = piece(a0 + (f + .15) * (a1 - a0) / fo, a0 + (f + .6) * (a1 - a0) / fo, .02, SOF - .04, mat, .13); fl.position[alongX ? 'z' : 'x'] += inward * off; fl.castShadow = false; g.add(fl); }
       }
@@ -821,5 +822,16 @@ function close() {
   if (root) root.classList.remove('open');
   document.body.style.overflow = '';
 }
-window.RHWalk = { preload: () => Promise.all([load(), loadData()]), open, close, isOpen: () => running, _debug: () => ({ scene, home, grid, P }) };
+window.RHWalk = { preload: () => Promise.all([load(), loadData()]), open, close, isOpen: () => running, _debug: () => ({ scene, home, grid, P }),
+  /* capture mode for stills and previs clips: exact camera, no interface, one frame per call */
+  _cap: o => {
+    running = false; marker.visible = false;
+    const [x, z] = o.px != null ? cur.map.toW(o.px, o.py) : [o.x, o.z];
+    if (renderer.getPixelRatio() !== 1) renderer.setPixelRatio(1);
+    renderer.setSize(o.w, o.h, false); camera.aspect = o.w / o.h; camera.fov = o.fov || 53; camera.updateProjectionMatrix();
+    camera.position.set(x, o.y || 1.45, z); camera.rotation.set(o.pitch || 0, -(o.yaw || 0) * Math.PI / 180, 0, 'YXZ');
+    renderer.render(scene, camera);
+    return canvas.toDataURL(o.fmt === 'jpg' ? 'image/jpeg' : 'image/png', .93);
+  },
+  _free: (px, py) => { const [x, z] = cur.map.toW(px, py); return !blocked(x, z); } };
 })();
