@@ -38,7 +38,8 @@ const css = `
 #walk{position:fixed;inset:0;z-index:50;background:#16171a;display:none;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none}
 #walk.open{display:block}
 #walk canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;outline:none}
-#walk canvas.drag{cursor:grabbing}
+#walk canvas.grabbing{cursor:grabbing}
+#walk canvas{transform:none!important;opacity:1!important;left:0!important;top:0!important}
 #walk .tt{opacity:1;transition:none;position:absolute;left:20px;top:20px;z-index:3;background:rgba(14,15,18,.62);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px;max-width:min(420px,calc(100vw - 40px))}
 #walk .tt p{margin:0 0 4px;font-size:12px;color:#e7c879;letter-spacing:.02em}
 #walk .tt h2{font:300 28px/1.05 'Josefin Sans',sans-serif;margin:0}
@@ -627,7 +628,7 @@ const ptrs = new Map(); let drag = null, joy = null;
 function bindInput() {
   canvas.addEventListener('pointerdown', e => {
     if (e.button > 0) return; canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now() });
-    drag = { moved: false }; canvas.classList.add('drag'); hideHelp();
+    drag = { moved: false }; canvas.classList.add('grabbing'); hideHelp();
   });
   canvas.addEventListener('pointermove', e => {
     const p = ptrs.get(e.pointerId);
@@ -637,10 +638,10 @@ function bindInput() {
     if (drag.moved) { const k = (touch ? .0062 : .0048) * (P.fov / 72); P.ty += dx * k; P.tp = Math.max(-1.25, Math.min(1.2, P.tp + dy * k)); marker.visible = false; }
   });
   const up = e => {
-    const p = ptrs.get(e.pointerId); ptrs.delete(e.pointerId); canvas.classList.remove('drag');
+    const p = ptrs.get(e.pointerId); ptrs.delete(e.pointerId); canvas.classList.remove('grabbing');
     if (p && drag && !drag.moved && performance.now() - p.t < 450) clickFloor(e);
   };
-  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); canvas.classList.remove('drag'); });
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); canvas.classList.remove('grabbing'); });
   canvas.addEventListener('pointerleave', () => { if (!ptrs.size) marker.visible = false; });
   canvas.addEventListener('wheel', e => { e.preventDefault(); P.tfov = Math.max(42, Math.min(82, P.tfov + e.deltaY * .03)); }, { passive: false });
   addEventListener('keydown', e => {
